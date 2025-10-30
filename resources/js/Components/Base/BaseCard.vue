@@ -1,0 +1,50 @@
+<template>
+    <div class="bg-white/80 backdrop-blur-sm rounded-3xl shadow-xl border border-white/50 overflow-hidden transition-all duration-300 hover:shadow-2xl hover:scale-105" :class="customClass">
+        <!-- Header dengan gradient -->
+        <div v-if="$slots.header || title" class="bg-gradient-to-r from-pink-400/10 to-sky-400/10 py-2 px-2 border-b border-pink-100">
+            <slot name="header">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <h3 class="text-xl font-bold bg-gradient-to-r from-pink-600 to-sky-600 bg-clip-text text-transparent">
+                            {{ title }}
+                        </h3>
+                        <p v-if="description" class="text-gray-600 mt-1 flex items-center gap-2">
+                            <span class="text-pink-400">💫</span>
+                            {{ description }}
+                        </p>
+                    </div>
+                    <div v-if="$slots['header-action']" class="flex-shrink-0">
+                        <slot name="header-action"></slot>
+                    </div>
+                </div>
+            </slot>
+        </div>
+
+        <!-- Content -->
+        <div class="p-1 bg-gradient-to-br from-white via-pink-50/30 to-sky-50/30">
+            <slot></slot>
+        </div>
+
+        <!-- Footer -->
+        <div v-if="$slots.footer" class="bg-gradient-to-r from-pink-50/50 to-sky-50/50 px-4 py-2 border-t border-pink-100 rounded-b-3xl">
+            <slot name="footer"></slot>
+        </div>
+    </div>
+</template>
+
+<script setup>
+defineProps({
+    title: {
+        type: String,
+        default: ''
+    },
+    description: {
+        type: String,
+        default: ''
+    },
+    customClass: {
+        type: String,
+        default: ''
+    }
+});
+</script>
