@@ -12,6 +12,7 @@ class ProjectItem extends Model
     protected $fillable = [
         'project_id',
         'item_type',
+        'item_category', // TAMBAHKAN INI
         'name',
         'description',
         'planned_amount',
@@ -32,7 +33,7 @@ class ProjectItem extends Model
         return $this->belongsTo(Project::class);
     }
 
-        public function checklists()
+    public function checklists()
     {
         return $this->hasMany(ItemChecklist::class);
     }
@@ -53,9 +54,8 @@ class ProjectItem extends Model
         return $this->status === 'ready' && $this->actual_spent >= $this->planned_amount;
     }
 
-
     // Accessor untuk formatted amounts
-        public function getFormattedPlannedAmountAttribute()
+    public function getFormattedPlannedAmountAttribute()
     {
         return number_format($this->planned_amount, 0, ',', '.');
     }
@@ -80,10 +80,22 @@ class ProjectItem extends Model
         return $this->planned_amount - $this->actual_spent;
     }
 
+    // Accessor untuk item category dengan fallback
+    public function getItemCategoryAttribute($value)
+    {
+        return $value ?: 'Uncategorized';
+    }
+
     // Scope untuk item type
     public function scopeByType($query, $type)
     {
         return $query->where('item_type', $type);
+    }
+
+    // Scope untuk item category
+    public function scopeByCategory($query, $category)
+    {
+        return $query->where('item_category', $category);
     }
 
     // Scope untuk status
@@ -96,6 +108,21 @@ class ProjectItem extends Model
     public function scopeActive($query)
     {
         return $query->where('status', '!=', 'cancelled');
+    }
+
+    // Method untuk mendapatkan semua kategori unik dalam project
+    public function scopeGetCategories($query, $projectId = null)
+    {
+        $query = $query->select('item_category')
+                      ->whereNotNull('item_category')
+                      ->where('item_category', '!=', '')
+                      ->distinct();
+
+        if ($projectId) {
+            $query->where('project_id', $projectId);
+        }
+
+        return $query->pluck('item_category');
     }
 
     // Method untuk update actual spent dari payments

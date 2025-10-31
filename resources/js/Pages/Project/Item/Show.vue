@@ -55,75 +55,88 @@
                     </ol>
                 </nav>
 
-                <!-- 🌸 INFORMASI PROJECT ELEGAN RESPONSIF -->
-                <div class="relative overflow-hidden bg-gradient-to-br from-pink-50 via-white to-blue-50 rounded-3xl border border-pink-100/40 shadow-md p-4 mb-4">
-                    <!-- Ornamen Latar -->
-                    <div class="absolute -top-10 -right-10 w-40 h-40 bg-pink-100/40 rounded-full blur-3xl"></div>
-                    <div class="absolute -bottom-12 -left-12 w-48 h-48 bg-blue-100/40 rounded-full blur-3xl"></div>
+<!-- 🌸 INFORMASI PROJECT ELEGAN RESPONSIF -->
+<div class="relative overflow-hidden bg-gradient-to-br from-pink-50 via-white to-blue-50 rounded-3xl border border-pink-100/40 shadow-md p-4 mb-4">
+    <!-- Ornamen Latar -->
+    <div class="absolute -top-10 -right-10 w-40 h-40 bg-pink-100/40 rounded-full blur-3xl"></div>
+    <div class="absolute -bottom-12 -left-12 w-48 h-48 bg-blue-100/40 rounded-full blur-3xl"></div>
 
-                    <!-- Header -->
-                    <div class="relative flex items-center justify-between mb-2">
-                        <div class="flex items-center gap-4">
-                            <div class="w-12 h-12 bg-gradient-to-r from-pink-400 to-rose-500 rounded-2xl flex items-center justify-center shadow-md">
-                                <span class="text-2xl text-white">{{ item.item_type_icon }}</span>
-                            </div>
-                            <div>
-                                <h1 class="text-2xl font-bold text-gray-800">{{ item.name }}</h1>
-                                <div class="flex items-center gap-3 mt-2">
-                                    <span 
-                                        class="px-3 py-1 rounded-full text-sm font-medium"
-                                        :class="item.item_type_badge"
-                                    >
-                                        {{ formatItemType(item.item_type) }}
-                                    </span>
-                                    <span 
-                                        class="px-3 py-1 rounded-full text-sm font-medium"
-                                        :class="item.status_badge"
-                                    >
-                                        {{ item.status_icon }} {{ formatStatus(item.status) }}
-                                    </span>
-                                </div>
-                            </div>
-                        </div>
-
-                       <!-- Action Buttons -->
-                        <div class="flex items-center gap-3">
-                            <BaseButton
-                                v-if="canEditItem"
-                                @click="openEditModal"
-                                variant="primary"
-                                size="sm"
-                            >
-                                <template #icon>✏️</template>
-                                Edit Item
-                            </BaseButton>
-                            <div v-else class="px-3 py-1 bg-gray-100 text-gray-600 rounded-full text-sm">
-                                🔒 Read Only
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Progress Stats -->
-                    <div class="relative grid grid-cols-3 md:grid-cols-3 gap-2 mt-4">
-                        <div class="text-center p-4 bg-white/80 backdrop-blur-sm rounded-2xl border border-blue-200/50 shadow-sm">
-                            <div class="text-2xl mb-2">💰</div>
-                            <div class="text-xl font-bold text-blue-700">{{ item.formatted_planned_amount }}</div>
-                            <div class="text-sm text-gray-600">Rencana Biaya</div>
-                        </div>
-                        <div class="text-center p-4 bg-white/80 backdrop-blur-sm rounded-2xl border border-orange-200/50 shadow-sm">
-                            <div class="text-2xl mb-2">💸</div>
-                            <div class="text-xl font-bold text-orange-700">{{ item.formatted_actual_spent }}</div>
-                            <div class="text-sm text-gray-600">Realisasi</div>
-                        </div>
-                        <div class="text-center p-4 bg-white/80 backdrop-blur-sm rounded-2xl border border-green-200/50 shadow-sm">
-                            <div class="text-2xl mb-2">📊</div>
-                            <div class="text-xl font-bold" :class="item.remaining_amount >= 0 ? 'text-green-700' : 'text-red-700'">
-                                {{ item.formatted_remaining_amount }}
-                            </div>
-                            <div class="text-sm text-gray-600">Sisa Anggaran</div>
-                        </div>
-                    </div>
+    <!-- Header -->
+    <div class="relative flex items-center justify-between mb-2">
+        <div class="flex items-center gap-4">
+            <div class="w-12 h-12 bg-gradient-to-r from-pink-400 to-rose-500 rounded-2xl flex items-center justify-center shadow-md">
+                <span class="text-2xl text-white">{{ item.item_type_icon }}</span>
+            </div>
+            <div>
+                <h1 class="text-2xl font-bold text-gray-800">{{ item.name }}</h1>
+                <div class="flex items-center gap-3 mt-2">
+                    <span 
+                        class="px-3 py-1 rounded-full text-sm font-medium"
+                        :class="item.item_type_badge"
+                    >
+                        {{ formatItemType(item.item_type) }}
+                    </span>
+                    <span 
+                        class="px-3 py-1 rounded-full text-sm font-medium"
+                        :class="item.status_badge"
+                    >
+                        {{ item.status_icon }} {{ formatStatus(item.status) }}
+                    </span>
+                    <!-- TAMBAHKAN KATEGORI DI SINI -->
+                    <span 
+                        v-if="item.item_category && item.item_category !== 'Uncategorized'"
+                        class="px-3 py-1 rounded-full text-sm font-medium bg-purple-100 text-purple-800"
+                    >
+                        📂 {{ item.item_category }}
+                    </span>
                 </div>
+            </div>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="flex items-center gap-3">
+            <BaseButton
+                v-if="canEditItem"
+                @click="openEditModal"
+                variant="primary"
+                size="sm"
+            >
+                <template #icon>✏️</template>
+                Edit Item
+            </BaseButton>
+            <div v-else class="px-3 py-1 bg-gray-100 text-gray-600 rounded-full text-sm">
+                🔒 Read Only
+            </div>
+        </div>
+    </div>
+
+    <!-- Progress Stats -->
+    <div class="relative grid grid-cols-3 md:grid-cols-4 gap-2 mt-4"> <!-- UBAH MENJADI 4 KOLOM -->
+        <div class="text-center p-4 bg-white/80 backdrop-blur-sm rounded-2xl border border-blue-200/50 shadow-sm">
+            <div class="text-2xl mb-2">💰</div>
+            <div class="text-xl font-bold text-blue-700">{{ item.formatted_planned_amount }}</div>
+            <div class="text-sm text-gray-600">Rencana Biaya</div>
+        </div>
+        <div class="text-center p-4 bg-white/80 backdrop-blur-sm rounded-2xl border border-orange-200/50 shadow-sm">
+            <div class="text-2xl mb-2">💸</div>
+            <div class="text-xl font-bold text-orange-700">{{ item.formatted_actual_spent }}</div>
+            <div class="text-sm text-gray-600">Realisasi</div>
+        </div>
+        <div class="text-center p-4 bg-white/80 backdrop-blur-sm rounded-2xl border border-green-200/50 shadow-sm">
+            <div class="text-2xl mb-2">📊</div>
+            <div class="text-xl font-bold" :class="item.remaining_amount >= 0 ? 'text-green-700' : 'text-red-700'">
+                {{ item.formatted_remaining_amount }}
+            </div>
+            <div class="text-sm text-gray-600">Sisa Anggaran</div>
+        </div>
+        <!-- TAMBAHKAN PROGRESS PERCENTAGE -->
+        <div class="text-center p-4 bg-white/80 backdrop-blur-sm rounded-2xl border border-purple-200/50 shadow-sm">
+            <div class="text-2xl mb-2">📈</div>
+            <div class="text-xl font-bold text-purple-700">{{ item.progress_percentage.toFixed(1) }}%</div>
+            <div class="text-sm text-gray-600">Progress</div>
+        </div>
+    </div>
+</div>
 
                 <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
                     <!-- Main Content -->
@@ -446,6 +459,71 @@
             :disabled="form.processing"
         />
 
+                <!-- Item Category -->
+        <div class="space-y-4">
+            <div class="flex items-center justify-between">
+                <label class="block text-sm font-medium text-gray-700 flex items-center gap-2">
+                    <span class="text-lg">📂</span>
+                    Kategori Item
+                </label>
+                
+                <!-- Toggle antara input baru dan pilih yang ada -->
+                <div v-if="hasExistingCategories" class="flex gap-2">
+                    <BaseButton
+                        @click="showCategoryInput = false"
+                        variant="secondary"
+                        size="xs"
+                        :class="!shouldShowCategoryInput ? 'ring-2 ring-pink-400' : ''"
+                    >
+                        <template #icon>📋</template>
+                        Pilih Kategori
+                    </BaseButton>
+                    <BaseButton
+                        @click="showCategoryInput = true"
+                        variant="secondary"
+                        size="xs"
+                        :class="shouldShowCategoryInput ? 'ring-2 ring-pink-400' : ''"
+                    >
+                        <template #icon>➕</template>
+                        Kategori Baru
+                    </BaseButton>
+                </div>
+            </div>
+
+            <!-- Select Input untuk memilih kategori yang ada -->
+            <div v-if="!shouldShowCategoryInput && hasExistingCategories">
+                <SelectInput
+                    v-model="form.item_category"
+                    label="Pilih Kategori"
+                    placeholder="Pilih kategori yang sudah ada"
+                    :options="categoryOptions"
+                    :error="form.errors.item_category"
+                    icon="📂"
+                    :disabled="form.processing"
+                />
+                <p class="text-xs text-gray-500 mt-1">
+                    Pilih dari {{ availableCategories.length }} kategori yang sudah ada
+                </p>
+            </div>
+
+            <!-- Text Input untuk kategori baru -->
+            <div v-else>
+                <TextInput
+                    v-model="form.item_category"
+                    label="Kategori Item"
+                    placeholder="Contoh: Perlengkapan Kamar, Dekorasi, Katering, dll."
+                    :error="form.errors.item_category"
+                    icon="📂"
+                    :disabled="form.processing"
+                />
+                <p class="text-xs text-gray-500 mt-1" v-if="hasExistingCategories">
+                    Atau <button type="button" @click="showCategoryInput = false" class="text-pink-500 hover:text-pink-700 underline">
+                    pilih dari kategori yang sudah ada
+                    </button>
+                </p>
+            </div>
+        </div>
+
         <!-- Name -->
         <TextInput
             v-model="form.name"
@@ -694,7 +772,7 @@
 
 <script setup>
 import AppLayout from '@/Layouts/AppLayout.vue'
-import { ref, computed, watch } from 'vue'
+import { ref, computed, watch, onMounted  } from 'vue'
 import { Link, router, useForm } from '@inertiajs/vue3'
 import BaseButton from '@/Components/Base/BaseButton.vue'
 import BaseModal from '@/Components/Base/BaseModal.vue'
@@ -704,6 +782,7 @@ import TextInput from '@/Components/Form/TextInput.vue'
 import TextAreaInput from '@/Components/Form/TextAreaInput.vue'
 import AccountInput from '@/Components/Form/AccountInput.vue'
 import PaymentManager from '@/Components/Project/PaymentManager.vue'
+import axios from 'axios'; // TAMBAHKAN INI JIKA BELUM ADA
 
 const props = defineProps({
     item: Object,
@@ -716,9 +795,17 @@ const showEditModal = ref(false)
 const qty = ref(1)
 const unitPrice = ref(0)
 
+const showCategoryInput = ref(false) // TAMBAHKAN INI
+const availableCategories = ref([]) // TAMBAHKAN INI
+
+// Initialize data
+onMounted(() => {
+    loadCategories(); // LOAD CATEGORIES SAAT KOMPONEN MOUNT
+});
 // Forms
 const form = useForm({
     item_type: props.item.item_type,
+     item_category: props.item.item_category || '',
     name: props.item.name,
     description: props.item.description || '',
     planned_amount: props.item.planned_amount,
@@ -726,6 +813,52 @@ const form = useForm({
     status: props.item.status,
     details: props.item.details || {},
 });
+
+// Computed untuk kategori
+const hasExistingCategories = computed(() => {
+    return availableCategories.value && availableCategories.value.length > 0;
+});
+
+const shouldShowCategoryInput = computed(() => {
+    return showCategoryInput.value || !hasExistingCategories.value;
+});
+
+const categoryOptions = computed(() => {
+    if (!availableCategories.value || !Array.isArray(availableCategories.value)) {
+        return [];
+    }
+    return availableCategories.value.map(cat => ({ value: cat, label: cat }));
+});
+
+// Load categories dari API
+const loadCategories = async () => {
+    try {
+        console.log('Loading categories for project:', props.project.id);
+        const response = await axios.get(route('projects.items.api.categories', { 
+            project: props.project.id 
+        }));
+        
+        console.log('Categories API response:', response.data);
+        
+        // Handle response yang berbeda-beda
+        if (response.data && response.data.success) {
+            availableCategories.value = response.data.categories || [];
+        } else if (Array.isArray(response.data)) {
+            availableCategories.value = response.data;
+        } else if (response.data && Array.isArray(response.data.categories)) {
+            availableCategories.value = response.data.categories;
+        } else {
+            console.warn('Unexpected categories response format:', response.data);
+            availableCategories.value = [];
+        }
+        
+        console.log('Final available categories:', availableCategories.value);
+        
+    } catch (error) {
+        console.error('Error loading categories:', error);
+        availableCategories.value = [];
+    }
+};
 
 // Computed untuk form
 const isGoodsOrMaterial = computed(() => {
@@ -891,14 +1024,32 @@ watch([() => form.details.quantity, () => form.details.unit_price], () => {
     }
 });
 
-watch(() => form.item_type, (newType) => {
-    if (['goods', 'material'].includes(newType)) {
-        // Set default values untuk quantity dan unit_price jika belum ada
-        if (!form.details.quantity) form.details.quantity = 1;
-        if (!form.details.unit_price) form.details.unit_price = 0;
-        form.planned_amount = calculatedPlannedAmount.value;
-    } else {
-        form.planned_amount = form.planned_amount || 0;
+// watch(() => form.item_type, (newType) => {
+//     if (['goods', 'material'].includes(newType)) {
+//         // Set default values untuk quantity dan unit_price jika belum ada
+//         if (!form.details.quantity) form.details.quantity = 1;
+//         if (!form.details.unit_price) form.details.unit_price = 0;
+//         form.planned_amount = calculatedPlannedAmount.value;
+//     } else {
+//         form.planned_amount = form.planned_amount || 0;
+//     }
+// });
+
+// Watch untuk reset details ketika item_type berubah
+watch(() => form.item_type, (newType, oldType) => {
+    if (newType !== oldType) {
+        // Reset details yang tidak relevan dengan type baru
+        if (newType !== 'goods') {
+            const { purchase_type, ecommerce_platform, online_link, store_maps, store_address, ...otherDetails } = form.details;
+            form.details = otherDetails;
+        }
+        
+        // Reset planned amount calculation
+        if (['goods', 'material'].includes(newType)) {
+            if (!form.details.quantity) form.details.quantity = 1;
+            if (!form.details.unit_price) form.details.unit_price = 0;
+            form.planned_amount = calculatedPlannedAmount.value;
+        }
     }
 });
 
@@ -906,12 +1057,16 @@ watch(() => form.item_type, (newType) => {
 const openEditModal = () => {
     // Reset form dengan data item saat ini
     form.item_type = props.item.item_type;
+    form.item_category = props.item.item_category || '';
     form.name = props.item.name;
     form.description = props.item.description || '';
     form.planned_amount = props.item.planned_amount;
     form.actual_spent = props.item.actual_spent;
     form.status = props.item.status;
     form.details = props.item.details || {};
+
+    // Untuk edit, default ke input text
+    showCategoryInput.value = true;
     
     // Set qty dan unitPrice untuk goods dan material
     if (['goods', 'material'].includes(props.item.item_type)) {

@@ -135,6 +135,8 @@ Route::middleware([
             
             // API routes
             Route::get('/api/summary', [ProjectItemController::class, 'getItemSummary'])->name('api.summary');
+        Route::get('/api/categories', [ProjectItemController::class, 'getCategories'])->name('api.categories'); // UBAH INI
+        Route::get('/api/categories-encrypted', [ProjectItemController::class, 'getCategoriesEncrypted'])->name('api.categories.encrypted'); // UBAH INI
         });
     });
 

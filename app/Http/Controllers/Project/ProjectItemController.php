@@ -27,21 +27,24 @@ class ProjectItemController extends Controller
             ]);
         }
 
-        $items = $project->items()
+       $items = $project->items()
             ->orderBy('item_type')
+            ->orderBy('item_category') // TAMBAHKAN ORDER BY CATEGORY
             ->orderBy('status')
             ->orderBy('name')
             ->get()
-            ->map(function ($item)  use ($userId) {
-            $categoryOwner = $item->project->category->user;
-            $isOwner = $categoryOwner->id === $userId;
-            $isPartner = $this->isPartnerInSameFamily($categoryOwner, $userId);
+            ->map(function ($item) use ($userId) {
+                $categoryOwner = $item->project->category->user;
+                $isOwner = $categoryOwner->id === $userId;
+                $isPartner = $this->isPartnerInSameFamily($categoryOwner, $userId);
+                
                 return [
                     'id' => $item->id,
                     'project_id' => $item->project_id,
                     'item_type' => $item->item_type,
                     'item_type_badge' => $this->getItemTypeBadge($item->item_type),
                     'item_type_icon' => $this->getItemTypeIcon($item->item_type),
+                    'item_category' => $item->item_category, // TAMBAHKAN INI
                     'name' => $item->name,
                     'description' => $item->description,
                     'planned_amount' => $item->planned_amount,
@@ -181,7 +184,7 @@ class ProjectItemController extends Controller
                 ]);
             }
 
-             // Cek authorization - pemilik kategori ATAU partner dalam family yang sama
+            // Cek authorization - pemilik kategori ATAU partner dalam family yang sama
             if (!$this->canModifyProject($project)) {
                 return redirect()->back()->with([
                     'error' => 'Anda tidak memiliki akses untuk menambah item.',
@@ -191,6 +194,7 @@ class ProjectItemController extends Controller
 
             $validated = $request->validate([
                 'item_type' => 'required|in:goods,service,document,task,material',
+                'item_category' => 'nullable|string|max:150', // TAMBAHKAN VALIDASI
                 'name' => 'required|string|max:150',
                 'description' => 'nullable|string',
                 'planned_amount' => 'nullable|numeric|min:0',
@@ -263,6 +267,7 @@ class ProjectItemController extends Controller
             'item_type' => $item->item_type,
             'item_type_badge' => $this->getItemTypeBadge($item->item_type),
             'item_type_icon' => $this->getItemTypeIcon($item->item_type),
+            'item_category' => $item->item_category, // TAMBAHKAN INI
             'name' => $item->name,
             'description' => $item->description,
             'planned_amount' => $item->planned_amount,
@@ -337,7 +342,7 @@ class ProjectItemController extends Controller
                 ]);
             }
 
-             // Cek authorization - pemilik kategori ATAU partner dalam family yang sama
+            // Cek authorization - pemilik kategori ATAU partner dalam family yang sama
             if (!$this->canModifyProject($project)) {
                 return redirect()->back()->with([
                     'error' => 'Anda tidak memiliki akses untuk mengubah item.',
@@ -347,6 +352,7 @@ class ProjectItemController extends Controller
 
             $validated = $request->validate([
                 'item_type' => 'required|in:goods,service,document,task,material',
+                'item_category' => 'nullable|string|max:150', // TAMBAHKAN VALIDASI
                 'name' => 'required|string|max:150',
                 'description' => 'nullable|string',
                 'planned_amount' => 'nullable|numeric|min:0',
@@ -483,41 +489,47 @@ class ProjectItemController extends Controller
     /**
      * Get item summary untuk project
      */
-    public function getItemSummary(Project $project)
-    {
-        try {
-            // Cek akses
-            if (!$project->category->isAccessibleBy(Auth::id())) {
-                return response()->json([
-                    'error' => 'Anda tidak memiliki akses ke project ini.',
-                    'success' => false
-                ], 403);
-            }
-
-            $summary = [
-                'total_items' => $project->items()->count(),
-                'goods_count' => $project->items()->where('item_type', 'goods')->count(),
-                'services_count' => $project->items()->where('item_type', 'service')->count(),
-                'documents_count' => $project->items()->where('item_type', 'document')->count(),
-                'tasks_count' => $project->items()->where('item_type', 'task')->count(),
-                'materials_count' => $project->items()->where('item_type', 'material')->count(),
-                
-                'total_planned' => $project->items()->sum('planned_amount'),
-                'total_spent' => $project->items()->sum('actual_spent'),
-                'total_remaining' => $project->items()->sum('planned_amount') - $project->items()->sum('actual_spent'),
-                
-                'needed_count' => $project->items()->where('status', 'needed')->count(),
-                'in_progress_count' => $project->items()->where('status', 'in_progress')->count(),
-                'ready_count' => $project->items()->where('status', 'ready')->count(),
-                'complete_count' => $project->items()->where('status', 'complete')->count(),
-                'cancelled_count' => $project->items()->where('status', 'cancelled')->count(),
-            ];
-
-            return response()->json($summary);
-        } catch (\Exception $e) {
-            return response()->json(['error' => $e->getMessage()], 500);
+public function getItemSummary(Project $project)
+{
+    try {
+        // Cek akses
+        if (!$project->category->isAccessibleBy(Auth::id())) {
+            return response()->json([
+                'error' => 'Anda tidak memiliki akses ke project ini.',
+                'success' => false
+            ], 403);
         }
+
+        $items = $project->items;
+
+        $summary = [
+            'total_items' => $items->count(),
+            'goods_count' => $items->where('item_type', 'goods')->count(),
+            'services_count' => $items->where('item_type', 'service')->count(),
+            'documents_count' => $items->where('item_type', 'document')->count(),
+            'tasks_count' => $items->where('item_type', 'task')->count(),
+            'materials_count' => $items->where('item_type', 'material')->count(),
+            
+            // Tambahkan summary per kategori
+            'categories_count' => $items->whereNotNull('item_category')->pluck('item_category')->unique()->count(),
+            'uncategorized_count' => $items->whereNull('item_category')->orWhere('item_category', '')->count(),
+            
+            'total_planned' => $items->sum('planned_amount'),
+            'total_spent' => $items->sum('actual_spent'),
+            'total_remaining' => $items->sum('planned_amount') - $items->sum('actual_spent'),
+            
+            'needed_count' => $items->where('status', 'needed')->count(),
+            'in_progress_count' => $items->where('status', 'in_progress')->count(),
+            'ready_count' => $items->where('status', 'ready')->count(),
+            'complete_count' => $items->where('status', 'complete')->count(),
+            'cancelled_count' => $items->where('status', 'cancelled')->count(),
+        ];
+
+        return response()->json($summary);
+    } catch (\Exception $e) {
+        return response()->json(['error' => $e->getMessage()], 500);
     }
+}
 
     // Di ProjectItemController.php
 public function getItemSummaryEncrypted($projects)
@@ -611,6 +623,81 @@ public function getItemSummaryEncrypted($projects)
             'cancelled' => '❌',
             default => '📝',
         };
+    }
+
+    /**
+     * Get all unique categories for a project
+     */
+public function getCategories(Project $project)
+{
+    try {
+        // Cek akses
+        if (!$project->category->isAccessibleBy(Auth::id())) {
+            return response()->json([
+                'error' => 'Anda tidak memiliki akses ke project ini.',
+                'success' => false
+            ], 403);
+        }
+
+        $categories = $project->items()
+            ->select('item_category')
+            ->whereNotNull('item_category')
+            ->where('item_category', '!=', '')
+            ->distinct()
+            ->orderBy('item_category')
+            ->pluck('item_category');
+
+        // Pastikan selalu return array, bahkan jika kosong
+        return response()->json([
+            'categories' => $categories->toArray(), // TAMBAHKAN ->toArray()
+            'success' => true
+        ]);
+
+    } catch (\Exception $e) {
+        return response()->json([
+            'error' => 'Gagal memuat kategori: ' . $e->getMessage(),
+            'success' => false
+        ], 500);
+    }
+}
+
+    /**
+     * Get all unique categories for encrypted project
+     */
+    public function getCategoriesEncrypted($projects)
+    {
+        try {
+            // Decrypt ID project
+            $projectId = Crypt::decrypt($projects);
+            $project = Project::findOrFail($projectId);
+
+            // Cek akses
+            if (!$project->category->isAccessibleBy(Auth::id())) {
+                return response()->json([
+                    'error' => 'Anda tidak memiliki akses ke project ini.',
+                    'success' => false
+                ], 403);
+            }
+
+            $categories = $project->items()
+                ->select('item_category')
+                ->whereNotNull('item_category')
+                ->where('item_category', '!=', '')
+                ->distinct()
+                ->orderBy('item_category')
+                ->pluck('item_category');
+
+            return response()->json([
+                'categories' => $categories,
+                'success' => true
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'error' => 'Gagal memuat kategori',
+                'success' => false
+            ], 500);
+        }
     }
 
 }

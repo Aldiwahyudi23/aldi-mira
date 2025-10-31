@@ -16,6 +16,7 @@ return new class extends Migration
             $table->foreignId('project_id')->constrained('projects')->onDelete('cascade');
             
             $table->enum('item_type', ['goods', 'service', 'document', 'task', 'material']); 
+            $table->string('item_category', 150)->nullable();
             $table->string('name', 150);
             $table->text('description')->nullable();
             

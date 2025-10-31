@@ -53,10 +53,26 @@ const updatePlannedAmount = () => {
 };
 
 
+// Data dan state tambahan
+const categories = ref([]);
+const showCategoryInput = ref(false);
+const availableCategories = ref([]);
+
+// Computed untuk mengecek apakah ada kategori yang tersedia
+const hasExistingCategories = computed(() => {
+    return availableCategories.value && availableCategories.value.length > 0;
+});
+
+// Computed untuk menentukan apakah harus menampilkan input atau select
+const shouldShowCategoryInput = computed(() => {
+    return showCategoryInput.value || !hasExistingCategories.value;
+});
+
 // Filter state
 const filters = ref({
     item_type: '',
-    status: ''
+    status: '',
+    item_category: '' 
 });
 
 // Watch for flash messages
@@ -73,9 +89,52 @@ watch(() => page.props.flash, (newFlash) => {
     }
 }, { immediate: true });
 
+// Load categories dari API
+const loadCategories = async () => {
+    try {
+        console.log('Loading categories for project:', props.project.id);
+        
+        // GUNAKAN ROUTE NAME YANG BENAR
+        const response = await axios.get(route('projects.items.api.categories', { 
+            project: props.project.id 
+        }));
+        
+        console.log('Categories API response:', response.data);
+        
+        // Handle response yang berbeda-beda
+        if (response.data && response.data.success) {
+            // Format 1: { success: true, categories: [...] }
+            availableCategories.value = response.data.categories || [];
+        } else if (Array.isArray(response.data)) {
+            // Format 2: langsung array
+            availableCategories.value = response.data;
+        } else if (response.data && Array.isArray(response.data.categories)) {
+            // Format 3: { categories: [...] }
+            availableCategories.value = response.data.categories;
+        } else {
+            console.warn('Unexpected categories response format:', response.data);
+            availableCategories.value = [];
+        }
+        
+        console.log('Final available categories:', availableCategories.value);
+        
+    } catch (error) {
+        console.error('Error loading categories:', error);
+        
+        // Untuk debugging, berikan informasi lebih detail
+        if (error.response) {
+            console.error('Response status:', error.response.status);
+            console.error('Response data:', error.response.data);
+        }
+        
+        availableCategories.value = [];
+    }
+};
+
 // Forms
 const form = useForm({
     item_type: 'goods',
+    item_category: '',
     name: '',
     description: '',
     planned_amount: 0,
@@ -139,6 +198,13 @@ const activeColumns = [
         sortable: true,
         type: 'badge'
     },
+     {
+        key: 'item_category', // TAMBAHKAN KOLOM CATEGORY
+        label: 'Kategori',
+        icon: '📂',
+        sortable: true
+    },
+
     {
         key: 'planned_amount',
         label: 'Rencana Biaya',
@@ -198,6 +264,12 @@ const completedColumns = [
         sortable: true,
         type: 'badge'
     },
+      {
+        key: 'item_category', // TAMBAHKAN KOLOM CATEGORY
+        label: 'Kategori',
+        icon: '📂',
+        sortable: true
+    },
     {
         key: 'planned_amount',
         label: 'Rencana Biaya',
@@ -228,7 +300,9 @@ const completedColumns = [
     }
 ];
 
-// Filter options untuk BaseFilter
+
+
+// Filter options untuk BaseFilter - HAPUS CATEGORY DARI SINI
 const filterOptions = {
     item_type: {
         label: 'Jenis Item',
@@ -244,11 +318,33 @@ const filterOptions = {
             ...statusOptions
         ]
     }
+    // HAPUS item_category dari sini
 };
 
-// Computed untuk filtered data
+// Computed untuk filter options yang dinamis (termasuk category)
+const dynamicFilterOptions = computed(() => {
+    const options = { ...filterOptions };
+    
+    // Tambahkan category filter hanya jika ada categories
+    if (availableCategories.value && availableCategories.value.length > 0) {
+        options.item_category = {
+            label: 'Kategori',
+            options: [
+                { value: '', label: 'Semua Kategori' },
+                ...availableCategories.value.map(cat => ({ 
+                    value: cat, 
+                    label: cat 
+                }))
+            ]
+        };
+    }
+    
+    return options;
+});
+
+// Computed untuk filtered data dengan sorting yang benar
 const filteredItems = computed(() => {
-    let filtered = items.value;
+    let filtered = [...items.value]; // Buat copy array
 
     if (filters.value.item_type) {
         filtered = filtered.filter(item => item.item_type === filters.value.item_type);
@@ -258,7 +354,30 @@ const filteredItems = computed(() => {
         filtered = filtered.filter(item => item.status === filters.value.status);
     }
 
-    return filtered;
+    if (filters.value.item_category) {
+        filtered = filtered.filter(item => item.item_category === filters.value.item_category);
+    }
+
+    // Sorting berdasarkan: item_type -> item_category -> status -> name
+    return filtered.sort((a, b) => {
+        // Urutkan berdasarkan item_type
+        if (a.item_type !== b.item_type) {
+            return a.item_type.localeCompare(b.item_type);
+        }
+        
+        // Kemudian urutkan berdasarkan item_category
+        if (a.item_category !== b.item_category) {
+            return a.item_category.localeCompare(b.item_category);
+        }
+        
+        // Kemudian urutkan berdasarkan status
+        if (a.status !== b.status) {
+            return a.status.localeCompare(b.status);
+        }
+        
+        // Terakhir urutkan berdasarkan name
+        return a.name.localeCompare(b.name);
+    });
 });
 
 // Computed untuk filtered summary
@@ -325,19 +444,22 @@ const loadItemSummary = async () => {
 onMounted(() => {
     items.value = props.items;
     loadItemSummary();
+    loadCategories(); // TAMBAHKAN INI
 });
 
 const openCreateModal = () => {
     editingItem.value = null;
     form.reset();
     form.item_type = 'goods';
-    form.status = 'needed'; // Default status
+    form.item_category = ''; // Reset category
+    form.status = 'needed';
     form.planned_amount = 0;
-    form.actual_spent = 0; // Selalu 0 untuk create
+    form.actual_spent = 0;
     form.details = {
-        quantity: 1, // Default quantity
-        unit_price: 0 // Default unit price
+        quantity: 1,
+        unit_price: 0
     };
+    showCategoryInput.value = false; // Reset ke select jika ada categories
     showModal.value = true;
 };
 
@@ -352,14 +474,17 @@ const openEditModal = (item) => {
 
     editingItem.value = item;
     form.item_type = item.item_type;
+    form.item_category = item.item_category; // Set category dari item
     form.name = item.name;
     form.description = item.description;
     form.planned_amount = item.planned_amount;
-    form.actual_spent = item.actual_spent; // Sesuai database untuk edit
-    form.status = item.status; // Tetap ambil dari database untuk edit
+    form.actual_spent = item.actual_spent;
+    form.status = item.status;
     form.details = item.details || {};
     
-    // Set default untuk goods dan material jika belum ada
+    // Untuk edit, selalu gunakan input text
+    showCategoryInput.value = true;
+    
     if (['goods', 'material'].includes(item.item_type)) {
         if (!form.details.quantity) form.details.quantity = 1;
         if (!form.details.unit_price) form.details.unit_price = 0;
@@ -397,6 +522,7 @@ const saveItem = () => {
                 showModal.value = false;
                 loadItems();
                 loadItemSummary();
+                loadCategories(); // Refresh categories
                 form.reset();
                 editingItem.value = null;
             },
@@ -411,6 +537,7 @@ const saveItem = () => {
                 showModal.value = false;
                 loadItems();
                 loadItemSummary();
+                loadCategories(); // Refresh categories
                 form.reset();
             },
             onError: (errors) => {
@@ -434,6 +561,7 @@ const deleteItem = () => {
             showDeleteModal.value = false;
             loadItems();
             loadItemSummary();
+            loadCategories(); // Refresh categories
             itemToDelete.value = null;
             deleting.value = false;
         },
@@ -640,6 +768,8 @@ const completedSummary = computed(() => {
     };
 });
 
+
+
 // Watch untuk update planned_amount ketika quantity atau unit_price berubah
 watch([() => form.details.quantity, () => form.details.unit_price], () => {
     if (isGoodsOrMaterial.value) {
@@ -774,7 +904,7 @@ watch(() => form.item_type, (newType) => {
                 <!-- Filter Section -->
                 <BaseFilterItem
                     v-model:filters="filters"
-                    :options="filterOptions"
+                    :options="dynamicFilterOptions"
                     class="mb-4"
                 />
 
@@ -909,6 +1039,17 @@ watch(() => form.item_type, (newType) => {
                         @edit="openEditModal"
                         @delete="openDeleteModal"
                     >
+
+                        <!-- Custom column for item category -->
+                        <template #column-item_category="{ item }">
+                            <div class="flex items-center gap-2">
+                                <span class="text-lg">📂</span>
+                                <span class="font-medium text-gray-700 text-sm">
+                                    {{ item.item_category || 'Uncategorized' }}
+                                </span>
+                            </div>
+                        </template>
+
                         <!-- Custom column for item type -->
                         <template #column-item_type="{ item }">
                             <div class="flex items-center gap-2">
@@ -1215,6 +1356,71 @@ watch(() => form.item_type, (newType) => {
                             required
                             :disabled="form.processing"
                         />
+
+                        <!-- Item Category Section -->
+<div class="space-y-4">
+    <div class="flex items-center justify-between">
+        <label class="block text-sm font-medium text-gray-700 flex items-center gap-2">
+            <span class="text-lg">📂</span>
+            Kategori Item
+        </label>
+        
+        <!-- Toggle antara input baru dan pilih yang ada -->
+        <div v-if="hasExistingCategories && !editingItem" class="flex gap-2">
+            <BaseButton
+                @click="showCategoryInput = false"
+                variant="secondary"
+                size="xs"
+                :class="!shouldShowCategoryInput ? 'ring-2 ring-pink-400' : ''"
+            >
+                <template #icon>📋</template>
+                Pilih Kategori
+            </BaseButton>
+            <BaseButton
+                @click="showCategoryInput = true"
+                variant="secondary"
+                size="xs"
+                :class="shouldShowCategoryInput ? 'ring-2 ring-pink-400' : ''"
+            >
+                <template #icon>➕</template>
+                Kategori Baru
+            </BaseButton>
+        </div>
+    </div>
+
+    <!-- Select Input untuk memilih kategori yang ada -->
+    <div v-if="!shouldShowCategoryInput && hasExistingCategories">
+        <SelectInput
+            v-model="form.item_category"
+            label="Pilih Kategori"
+            placeholder="Pilih kategori yang sudah ada"
+            :options="availableCategories.map(cat => ({ value: cat, label: cat }))"
+            :error="form.errors.item_category"
+            icon="📂"
+            :disabled="form.processing"
+        />
+        <p class="text-xs text-gray-500 mt-1">
+            Pilih dari {{ availableCategories.length }} kategori yang sudah ada
+        </p>
+    </div>
+
+    <!-- Text Input untuk kategori baru -->
+    <div v-else>
+        <TextInput
+            v-model="form.item_category"
+            label="Kategori Item"
+            placeholder="Contoh: Perlengkapan Kamar, Dekorasi, Katering, dll."
+            :error="form.errors.item_category"
+            icon="📂"
+            :disabled="form.processing"
+        />
+        <p class="text-xs text-gray-500 mt-1" v-if="hasExistingCategories">
+            Atau <button type="button" @click="showCategoryInput = false" class="text-pink-500 hover:text-pink-700 underline">
+            pilih dari kategori yang sudah ada
+            </button>
+        </p>
+    </div>
+</div>
 
                         <!-- Name -->
                         <TextInput
