@@ -1,10 +1,19 @@
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { Head, Link, usePage } from '@inertiajs/vue3'
+import PWAInstallPrompt from '@/Components/PWAInstallPrompt.vue'
 
 defineProps({
   title: String,
 })
+
+// Register service worker
+onMounted(() => {
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('/sw.js')
+  }
+})
+
 
 // 🌟 Ambil flash message dari page props
 const flashMessage = computed(() => {
@@ -339,6 +348,9 @@ const menuItems = [
     <main class="flex-grow pt-20 pb-24 md:pb-6 transition-all duration-300 relative z-10">
       <slot />
     </main>
+
+     <!-- PWA Install Prompt -->
+    <PWAInstallPrompt />
   </div>
 </template>
 
