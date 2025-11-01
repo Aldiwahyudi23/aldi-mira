@@ -506,10 +506,35 @@ const openDeleteModal = (item) => {
     showDeleteModal.value = true;
 };
 
-const openDetailsModal = (item) => {
-    selectedItem.value = item;
-    showDetailsModal.value = true;
-};
+// const openDetailsModal = (item) => {
+//     selectedItem.value = item;
+//     showDetailsModal.value = true;
+// };
+
+    const openEncryptedItem = async (item) => {
+        try {
+        // Belum di gunakan ada error 
+            // // Generate encrypted ID via API
+            // const response = await axios.post(route('projects.api.encrypt-id'), {
+            //     project_id: project.id
+            // });
+            
+            // const encryptedId = response.data.encrypted_id;
+            
+            // Redirect ke halaman items dengan encrypted ID
+            router.visit(route('projects.items.show', { 
+                project: props.project.id, 
+                item
+            }));
+            
+        } catch (error) {
+            console.error('Error generating encrypted link:', error);
+            flashMessage.value = {
+                message: 'Gagal membuka project',
+                type: 'error'
+            };
+        }
+    };
 
 const saveItem = () => {
     if (editingItem.value) {
@@ -800,26 +825,27 @@ watch(() => form.item_type, (newType) => {
 <template>
     <AppLayout :title="`Item Project - ${project.name}`">
         <div class="py-2 min-h-screen relative overflow-hidden">
-            <div class="w-full px-4 sm:px-6 lg:px-8 relative z-10">
+            <!-- PERBAIKAN: Padding lebih kecil untuk mobile -->
+            <div class="w-full px-3 sm:px-4 lg:px-6 relative z-10">
                 <!-- Flash Message -->
                 <div 
                     v-if="flashMessage" 
-                    class="mb-6 p-4 rounded-2xl border backdrop-blur-sm transition-all duration-300"
+                    class="mb-4 md:mb-6 p-3 md:p-4 rounded-xl md:rounded-2xl border backdrop-blur-sm transition-all duration-300"
                     :class="{
                         'bg-green-50 border-green-200 text-green-800': flashMessage.type === 'success',
                         'bg-red-50 border-red-200 text-red-800': flashMessage.type === 'error'
                     }"
                 >
                     <div class="flex items-center justify-between">
-                        <div class="flex items-center gap-3">
-                            <span class="text-xl">
+                        <div class="flex items-center gap-2 md:gap-3">
+                            <span class="text-lg md:text-xl">
                                 {{ flashMessage.type === 'success' ? '✅' : '⚠️' }}
                             </span>
-                            <span class="font-medium">{{ flashMessage.message }}</span>
+                            <span class="font-medium text-sm md:text-base">{{ flashMessage.message }}</span>
                         </div>
                         <button 
                             @click="flashMessage = null"
-                            class="text-gray-500 hover:text-gray-700 transition-colors"
+                            class="text-gray-500 hover:text-gray-700 transition-colors text-lg"
                         >
                             ✕
                         </button>
@@ -828,10 +854,10 @@ watch(() => form.item_type, (newType) => {
                 
                 <!-- Hero Section -->
                 <div class="text-center mb-4">
-                    <h1 class="text-3xl md:text-4xl font-extrabold text-rose-600 drop-shadow-md mb-3">
+                    <h1 class="text-xl md:text-2xl lg:text-3xl font-extrabold text-rose-600 drop-shadow-md mb-2 md:mb-3">
                         📋 Kelola Item Project
                     </h1>
-                    <p class="text-gray-600 text-lg max-w-2xl mx-auto">
+                    <p class="text-gray-600 text-xs md:text-sm leading-relaxed px-2">
                         Kelola semua item, barang, jasa, dokumen, dan tugas untuk project 
                         <span class="text-blue-500 font-semibold">{{ project.name }}</span>. 
                         Pantau progress dan realisasi biaya untuk setiap item 💫
@@ -839,67 +865,66 @@ watch(() => form.item_type, (newType) => {
                 </div>
 
                 <!-- 🌸 INFORMASI PROJECT ELEGAN RESPONSIF -->
-                <div class="relative overflow-hidden bg-gradient-to-br from-pink-50 via-white to-blue-50 rounded-3xl border border-pink-100/40 shadow-md p-4 mb-4">
+                <div class="relative overflow-hidden bg-gradient-to-br from-pink-50 via-white to-blue-50 rounded-xl md:rounded-2xl border border-pink-100/40 shadow-md p-4 mb-4">
                     <!-- Ornamen Latar -->
                     <div class="absolute -top-10 -right-10 w-40 h-40 bg-pink-100/40 rounded-full blur-3xl"></div>
                     <div class="absolute -bottom-12 -left-12 w-48 h-48 bg-blue-100/40 rounded-full blur-3xl"></div>
 
                     <!-- Header -->
-                    <div class="relative flex items-center gap-4 mb-6">
-                        <div class="w-12 h-12 bg-gradient-to-r from-pink-400 to-rose-500 rounded-2xl flex items-center justify-center shadow-md">
-                            <span class="text-2xl text-white">🌷</span>
+                    <div class="relative flex items-center gap-3 md:gap-4 mb-4 md:mb-6">
+                        <div class="w-10 h-10 md:w-12 md:h-12 bg-gradient-to-r from-pink-400 to-rose-500 rounded-lg md:rounded-xl flex items-center justify-center shadow-md">
+                            <span class="text-xl md:text-2xl text-white">🌷</span>
                         </div>
                         <div>
-                            <h2 class="text-lg font-semibold text-gray-800">Detail Proyek</h2>
-                            <p class="text-sm text-gray-500 italic">“Setiap proyek punya cerita yang indah di baliknya.”</p>
+                            <h2 class="text-base md:text-lg font-semibold text-gray-800">Detail Proyek</h2>
+                            <p class="text-xs text-gray-500 italic">"Setiap proyek punya cerita yang indah di baliknya."</p>
                         </div>
                     </div>
 
                     <!-- Isi Informasi (Responsif) -->
-                    <div class="relative grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div class="relative grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6">
                         <!-- Nama Project -->
-                        <div class="flex items-start gap-3">
-                            <div class="w-9 h-9 bg-gradient-to-r from-pink-200 to-rose-100 rounded-xl flex items-center justify-center shadow-sm">
+                        <div class="flex items-start gap-2 md:gap-3">
+                            <div class="w-8 h-8 md:w-9 md:h-9 bg-gradient-to-r from-pink-200 to-rose-100 rounded-lg md:rounded-xl flex items-center justify-center shadow-sm">
                                 💼
                             </div>
                             <div>
                                 <p class="text-xs text-gray-500">Nama Project</p>
-                                <p class="text-base font-medium text-gray-800 tracking-wide">{{ project.name }}</p>
+                                <p class="text-sm md:text-base font-medium text-gray-800 tracking-wide">{{ project.name }}</p>
                                 <p class="text-xs text-gray-500 mt-1">Kategori: <span class="italic">{{ project.category }}</span></p>
                             </div>
                         </div>
 
                         <!-- Target Budget -->
-                        <div class="flex items-start gap-3">
-                            <div class="w-9 h-9 bg-gradient-to-r from-yellow-200 to-orange-100 rounded-xl flex items-center justify-center shadow-sm">
+                        <div class="flex items-start gap-2 md:gap-3">
+                            <div class="w-8 h-8 md:w-9 md:h-9 bg-gradient-to-r from-yellow-200 to-orange-100 rounded-lg md:rounded-xl flex items-center justify-center shadow-sm">
                                 💰
                             </div>
                             <div>
                                 <p class="text-xs text-gray-500">Target Budget</p>
-                                <p class="text-base font-medium text-gray-800">{{ formatCurrency(project.target_total_amount) }}</p>
+                                <p class="text-sm md:text-base font-medium text-gray-800">{{ formatCurrency(project.target_total_amount) }}</p>
                             </div>
                         </div>
 
                         <!-- Status Project -->
-                        <div class="flex items-start gap-3">
-                            <div class="w-9 h-9 bg-gradient-to-r from-blue-200 to-indigo-100 rounded-xl flex items-center justify-center shadow-sm">
+                        <div class="flex items-start gap-2 md:gap-3">
+                            <div class="w-8 h-8 md:w-9 md:h-9 bg-gradient-to-r from-blue-200 to-indigo-100 rounded-lg md:rounded-xl flex items-center justify-center shadow-sm">
                                 📊
                             </div>
                             <div>
                                 <p class="text-xs text-gray-500">Status Project</p>
-                                <p class="text-base font-medium text-gray-800 capitalize">{{ formatStatus(project.status) }}</p>
+                                <p class="text-sm md:text-base font-medium text-gray-800 capitalize">{{ formatStatus(project.status) }}</p>
                             </div>
                         </div>
                     </div>
 
                     <!-- Footer Quote -->
-                    <div class="mt-4 border-t border-pink-100 pt-4 text-center">
-                        <p class="text-sm text-gray-500 italic">
-                            “Sebuah proyek bukan sekadar angka, tapi tentang harapan, usaha, dan keindahan prosesnya.” 💖
+                    <div class="mt-3 md:mt-4 border-t border-pink-100 pt-3 md:pt-4 text-center">
+                        <p class="text-xs text-gray-500 italic">
+                            "Sebuah proyek bukan sekadar angka, tapi tentang harapan, usaha, dan keindahan prosesnya." 💖
                         </p>
                     </div>
                 </div>
-
 
                 <!-- Filter Section -->
                 <BaseFilterItem
@@ -909,70 +934,70 @@ watch(() => form.item_type, (newType) => {
                 />
 
                 <!-- Stats Cards - Responsive grid -->
-                <div class="grid grid-cols-2 lg:grid-cols-4 gap-2 mb-4">
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-2 mb-4">
                     <!-- Total Items -->
-                    <BaseCard class="text-center hover:scale-[1.02] transition transform border border-rose-100">
-                        <div class="p-4">
-                            <div class="w-12 h-12 bg-gradient-to-r from-rose-400 to-pink-500 rounded-xl flex items-center justify-center mx-auto mb-3 shadow-md">
-                                <span class="text-xl text-white">📋</span>
+                    <div class="bg-white/90 backdrop-blur-md shadow-lg rounded-xl md:rounded-2xl p-3 md:p-4 hover:scale-[1.02] transition transform border border-rose-100">
+                        <div class="text-center">
+                            <div class="w-10 h-10 md:w-12 md:h-12 bg-gradient-to-r from-rose-400 to-pink-500 rounded-lg md:rounded-xl flex items-center justify-center mx-auto mb-2 md:mb-3 shadow-md">
+                                <span class="text-lg md:text-xl text-white">📋</span>
                             </div>
-                            <h3 class="text-xl font-bold text-gray-800 mb-1">
+                            <h3 class="text-base md:text-lg lg:text-xl font-bold text-gray-800 mb-1">
                                 {{ filteredSummary.total_items || 0 }}
                             </h3>
-                            <p class="text-sm text-gray-600">Total Item</p>
+                            <p class="text-xs md:text-sm text-gray-600">Total Item</p>
                             <p class="text-xs text-rose-500 mt-1" v-if="filters.item_type || filters.status">
                                 🔍 Filter aktif
                             </p>
                         </div>
-                    </BaseCard>
+                    </div>
 
                     <!-- Total Rencana Biaya -->
-                    <BaseCard class="text-center hover:scale-[1.02] transition transform border border-blue-100">
-                        <div class="p-4">
-                            <div class="w-12 h-12 bg-gradient-to-r from-blue-400 to-cyan-500 rounded-xl flex items-center justify-center mx-auto mb-3 shadow-md">
-                                <span class="text-xl text-white">💰</span>
+                    <div class="bg-white/90 backdrop-blur-md shadow-lg rounded-xl md:rounded-2xl p-3 md:p-4 hover:scale-[1.02] transition transform border border-blue-100">
+                        <div class="text-center">
+                            <div class="w-10 h-10 md:w-12 md:h-12 bg-gradient-to-r from-blue-400 to-cyan-500 rounded-lg md:rounded-xl flex items-center justify-center mx-auto mb-2 md:mb-3 shadow-md">
+                                <span class="text-lg md:text-xl text-white">💰</span>
                             </div>
-                            <h3 class="text-xl font-bold text-gray-800 mb-1">
+                            <h3 class="text-base md:text-lg lg:text-xl font-bold text-gray-800 mb-1">
                                 {{ formatCurrency(filteredSummary.total_planned) }}
                             </h3>
-                            <p class="text-sm text-gray-600">Rencana Biaya</p>
+                            <p class="text-xs md:text-sm text-gray-600">Rencana Biaya</p>
                         </div>
-                    </BaseCard>
+                    </div>
 
                     <!-- Total Realisasi -->
-                    <BaseCard class="text-center hover:scale-[1.02] transition transform border border-orange-100">
-                        <div class="p-4">
-                            <div class="w-12 h-12 bg-gradient-to-r from-orange-400 to-red-500 rounded-xl flex items-center justify-center mx-auto mb-3 shadow-md">
-                                <span class="text-xl text-white">💸</span>
+                    <div class="bg-white/90 backdrop-blur-md shadow-lg rounded-xl md:rounded-2xl p-3 md:p-4 hover:scale-[1.02] transition transform border border-orange-100">
+                        <div class="text-center">
+                            <div class="w-10 h-10 md:w-12 md:h-12 bg-gradient-to-r from-orange-400 to-red-500 rounded-lg md:rounded-xl flex items-center justify-center mx-auto mb-2 md:mb-3 shadow-md">
+                                <span class="text-lg md:text-xl text-white">💸</span>
                             </div>
-                            <h3 class="text-xl font-bold text-gray-800 mb-1">
+                            <h3 class="text-base md:text-lg lg:text-xl font-bold text-gray-800 mb-1">
                                 {{ formatCurrency(filteredSummary.total_spent) }}
                             </h3>
-                            <p class="text-sm text-gray-600">Realisasi</p>
+                            <p class="text-xs md:text-sm text-gray-600">Realisasi</p>
                             <p class="text-xs text-gray-500 mt-1" v-if="filteredSummary.total_planned > 0">
                                 {{ ((filteredSummary.total_spent / filteredSummary.total_planned) * 100).toFixed(1) }}%
                             </p>
                         </div>
-                    </BaseCard>
+                    </div>
 
                     <!-- Sisa Anggaran -->
-                    <BaseCard class="text-center hover:scale-[1.02] transition transform border border-green-100">
-                        <div class="p-4">
-                            <div class="w-12 h-12 bg-gradient-to-r from-green-400 to-emerald-500 rounded-xl flex items-center justify-center mx-auto mb-3 shadow-md">
-                                <span class="text-xl text-white">📊</span>
+                    <div class="bg-white/90 backdrop-blur-md shadow-lg rounded-xl md:rounded-2xl p-3 md:p-4 hover:scale-[1.02] transition transform border border-green-100">
+                        <div class="text-center">
+                            <div class="w-10 h-10 md:w-12 md:h-12 bg-gradient-to-r from-green-400 to-emerald-500 rounded-lg md:rounded-xl flex items-center justify-center mx-auto mb-2 md:mb-3 shadow-md">
+                                <span class="text-lg md:text-xl text-white">📊</span>
                             </div>
-                            <h3 class="text-xl font-bold text-gray-800 mb-1">
+                            <h3 class="text-base md:text-lg lg:text-xl font-bold text-gray-800 mb-1">
                                 {{ formatCurrency(filteredSummary.total_remaining) }}
                             </h3>
-                            <p class="text-sm text-gray-600">Sisa Anggaran</p>
+                            <p class="text-xs md:text-sm text-gray-600">Sisa Anggaran</p>
                         </div>
-                    </BaseCard>
+                    </div>
                 </div>
 
                 <!-- Type Distribution -->
                 <div class="grid grid-cols-4 md:grid-cols-5 gap-2 mb-4">
-                    <BaseCard 
-                        class="text-center cursor-pointer transition-all duration-300 hover:scale-105" 
+                    <div 
+                        class="bg-white/90 backdrop-blur-md shadow-lg rounded-xl p-3 text-center cursor-pointer transition-all duration-300 hover:scale-105" 
                         :class="{
                             'ring-2 ring-pink-400 shadow-lg': filters.item_type === type,
                             'hover:shadow-md': !filters.item_type
@@ -981,46 +1006,43 @@ watch(() => form.item_type, (newType) => {
                         :key="type"
                         @click="filters.item_type = filters.item_type === type ? '' : type"
                     >
-                        <div class="p-3">
-                            <div class="text-2xl mb-1">
-                                {{ 
-                                    type === 'goods' ? '🛍️' :
-                                    type === 'service' ? '👨‍💼' :
-                                    type === 'document' ? '📄' :
-                                    type === 'task' ? '✅' : '🏗️'
-                                }}
-                            </div>
-                            <h3 class="text-lg font-bold text-gray-800">
-                                <!-- PERBAIKAN: Gunakan property yang benar -->
-                                {{ 
-                                    type === 'goods' ? filteredSummary.goods_count :
-                                    type === 'service' ? filteredSummary.services_count :
-                                    type === 'document' ? filteredSummary.documents_count :
-                                    type === 'task' ? filteredSummary.tasks_count :
-                                    filteredSummary.materials_count 
-                                }}
-                            </h3>
-                            <p class="text-xs text-gray-600 capitalize">
-                                {{ formatItemType(type) }}
-                            </p>
-                            <p class="text-xs text-pink-500 mt-1" v-if="filters.item_type === type">
-                                ✓ Terfilter
-                            </p>
+                        <div class="text-xl md:text-2xl mb-1">
+                            {{ 
+                                type === 'goods' ? '🛍️' :
+                                type === 'service' ? '👨‍💼' :
+                                type === 'document' ? '📄' :
+                                type === 'task' ? '✅' : '🏗️'
+                            }}
                         </div>
-                    </BaseCard>
+                        <h3 class="text-base md:text-lg font-bold text-gray-800">
+                            {{ 
+                                type === 'goods' ? filteredSummary.goods_count :
+                                type === 'service' ? filteredSummary.services_count :
+                                type === 'document' ? filteredSummary.documents_count :
+                                type === 'task' ? filteredSummary.tasks_count :
+                                filteredSummary.materials_count 
+                            }}
+                        </h3>
+                        <p class="text-xs text-gray-600 capitalize">
+                            {{ formatItemType(type) }}
+                        </p>
+                        <p class="text-xs text-pink-500 mt-1" v-if="filters.item_type === type">
+                            ✓ Terfilter
+                        </p>
+                    </div>
                 </div>
 
                 <!-- Tabel Item Aktif -->
-                <div v-if="activeItems.length > 0" class="mb-8">
-                    <div class="bg-gradient-to-r from-green-50 to-emerald-50 rounded-2xl p-6 border border-green-200 mb-4">
-                        <h3 class="text-xl font-bold text-gray-800 flex items-center gap-3 mb-2">
-                            <span class="text-2xl">🚀</span>
+                <div v-if="activeItems.length > 0" class="mb-6 md:mb-8">
+                    <div class="bg-gradient-to-r from-green-50 to-emerald-50 rounded-xl md:rounded-2xl p-4 md:p-6 border border-green-200 mb-4">
+                        <h3 class="text-lg md:text-xl font-bold text-gray-800 flex items-center gap-2 md:gap-3 mb-2">
+                            <span class="text-xl md:text-2xl">🚀</span>
                             Item Aktif
-                            <span class="text-sm font-normal text-gray-600 bg-white px-3 py-1 rounded-full">
+                            <span class="text-xs font-normal text-gray-600 bg-white px-2 py-1 rounded-full">
                                 {{ activeItems.length }} item
                             </span>
                         </h3>
-                        <p class="text-gray-600">
+                        <p class="text-gray-600 text-sm">
                             Item yang masih dalam proses pengerjaan. Total rencana biaya: 
                             <span class="font-bold text-blue-600">{{ formatCurrency(activeSummary.total_planned) }}</span>
                         </p>
@@ -1043,8 +1065,8 @@ watch(() => form.item_type, (newType) => {
                         <!-- Custom column for item category -->
                         <template #column-item_category="{ item }">
                             <div class="flex items-center gap-2">
-                                <span class="text-lg">📂</span>
-                                <span class="font-medium text-gray-700 text-sm">
+                                <span class="text-base md:text-lg">📂</span>
+                                <span class="font-medium text-gray-700 text-xs md:text-sm">
                                     {{ item.item_category || 'Uncategorized' }}
                                 </span>
                             </div>
@@ -1053,7 +1075,7 @@ watch(() => form.item_type, (newType) => {
                         <!-- Custom column for item type -->
                         <template #column-item_type="{ item }">
                             <div class="flex items-center gap-2">
-                                <span class="text-lg">{{ item.item_type_icon }}</span>
+                                <span class="text-base md:text-lg">{{ item.item_type_icon }}</span>
                                 <span 
                                     class="px-2 py-1 rounded-full text-xs font-medium"
                                     :class="item.item_type_badge"
@@ -1066,8 +1088,8 @@ watch(() => form.item_type, (newType) => {
                         <!-- Custom column for planned amount -->
                         <template #column-planned_amount="{ item }">
                             <div class="flex items-center gap-2">
-                                <span class="text-lg text-blue-600">💰</span>
-                                <span class="font-bold text-gray-800 text-sm text-blue-700">
+                                <span class="text-base md:text-lg text-blue-600">💰</span>
+                                <span class="font-bold text-gray-800 text-xs md:text-sm text-blue-700">
                                     {{ formatCurrency(item.planned_amount) }}
                                 </span>
                             </div>
@@ -1076,8 +1098,8 @@ watch(() => form.item_type, (newType) => {
                         <!-- Custom column for actual spent -->
                         <template #column-actual_spent="{ item }">
                             <div class="flex items-center gap-2">
-                                <span class="text-lg text-orange-600">💸</span>
-                                <span class="font-bold text-gray-800 text-sm text-orange-700">
+                                <span class="text-base md:text-lg text-orange-600">💸</span>
+                                <span class="font-bold text-gray-800 text-xs md:text-sm text-orange-700">
                                     {{ formatCurrency(item.actual_spent) }}
                                 </span>
                             </div>
@@ -1086,10 +1108,10 @@ watch(() => form.item_type, (newType) => {
                         <!-- Custom column for remaining amount -->
                         <template #column-remaining_amount="{ item }">
                             <div class="flex items-center gap-2">
-                                <span class="text-lg" :class="item.remaining_amount >= 0 ? 'text-green-600' : 'text-red-600'">
+                                <span class="text-base md:text-lg" :class="item.remaining_amount >= 0 ? 'text-green-600' : 'text-red-600'">
                                     📊
                                 </span>
-                                <span class="font-bold text-sm" :class="item.remaining_amount >= 0 ? 'text-green-700' : 'text-red-700'">
+                                <span class="font-bold text-xs md:text-sm" :class="item.remaining_amount >= 0 ? 'text-green-700' : 'text-red-700'">
                                     {{ formatCurrency(item.remaining_amount) }}
                                 </span>
                             </div>
@@ -1100,7 +1122,7 @@ watch(() => form.item_type, (newType) => {
                             <div class="space-y-1">
                                 <div class="flex justify-between text-xs">
                                     <span class="font-medium">{{ item.progress_percentage.toFixed(1) }}%</span>
-                                    <span>{{ formatCurrency(item.actual_spent) }} / {{ formatCurrency(item.planned_amount) }}</span>
+                                    <span class="text-xs">{{ formatCurrency(item.actual_spent) }} / {{ formatCurrency(item.planned_amount) }}</span>
                                 </div>
                                 <div class="w-full bg-gray-200 rounded-full h-2">
                                     <div 
@@ -1120,7 +1142,7 @@ watch(() => form.item_type, (newType) => {
                         <!-- Custom column for status -->
                         <template #column-status="{ item }">
                             <div class="flex items-center gap-2">
-                                <span class="text-lg">{{ item.status_icon }}</span>
+                                <span class="text-base md:text-lg">{{ item.status_icon }}</span>
                                 <span 
                                     class="px-2 py-1 rounded-full text-xs font-medium"
                                     :class="item.status_badge"
@@ -1133,60 +1155,60 @@ watch(() => form.item_type, (newType) => {
                         <!-- Custom column for date -->
                         <template #column-created_at="{ item }">
                             <div class="flex items-center gap-2">
-                                <span class="text-lg">📅</span>
-                                <span class="font-medium text-gray-700 text-sm">{{ formatDate(item.created_at) }}</span>
+                                <span class="text-base md:text-lg">📅</span>
+                                <span class="font-medium text-gray-700 text-xs md:text-sm">{{ formatDate(item.created_at) }}</span>
                             </div>
                         </template>
 
                         <!-- Custom actions slot -->
                         <template #actions="{ item }">
-                            <BaseButton
-                                @click="openDetailsModal(item)"
-                                variant="primary"
-                                size="sm"
-                                class="!px-2 !py-2"
-                                title="Lihat detail item"
-                            >
-                                <template #icon>👁️</template>
-                                Detail
-                            </BaseButton>
-                            <BaseButton
-                                @click="openEditModal(item)"
-                                variant="secondary"
-                                size="sm"
-                                class="!px-2 !py-2"
-                                :disabled="!item.can_edit" 
-                                :title="!item.can_edit ? 'Hanya pemilik kategori dan partner yang dapat mengedit' : 'Edit item'"
-                            >
-                                <template #icon>✏️</template>
-                                Edit
-                            </BaseButton>
-                            <BaseButton
-                                @click="openDeleteModal(item)"
-                                variant="danger"
-                                size="sm"
-                                class="!px-2 !py-2"
-                                :disabled="!item.can_edit" 
-                                :title="!item.can_edit ? 'Hanya pemilik kategori dan partner yang dapat menghapus' : 'Hapus item'"
-                            >
-                                <template #icon>🗑️</template>
-                                Hapus
-                            </BaseButton>
+                                <BaseButton
+                                    @click="openEncryptedItem(item)"
+                                    variant="primary"
+                                    size="sm"
+                                    class="!px-2 !py-1 text-xs"
+                                    title="Lihat detail item"
+                                >
+                                    <template #icon>👁️</template>
+                                    <span class="hidden xs:inline">Detail</span>
+                                </BaseButton>
+                                <BaseButton
+                                    @click="openEditModal(item)"
+                                    variant="secondary"
+                                    size="sm"
+                                    class="!px-2 !py-1 text-xs"
+                                    :disabled="!item.can_edit" 
+                                    :title="!item.can_edit ? 'Hanya pemilik kategori dan partner yang dapat mengedit' : 'Edit item'"
+                                >
+                                    <template #icon>✏️</template>
+                                    <span class="hidden xs:inline">Edit</span>
+                                </BaseButton>
+                                <BaseButton
+                                    @click="openDeleteModal(item)"
+                                    variant="danger"
+                                    size="sm"
+                                    class="!px-2 !py-1 text-xs"
+                                    :disabled="!item.can_edit" 
+                                    :title="!item.can_edit ? 'Hanya pemilik kategori dan partner yang dapat menghapus' : 'Hapus item'"
+                                >
+                                    <template #icon>🗑️</template>
+                                    <span class="hidden xs:inline">Hapus</span>
+                                </BaseButton>
                         </template>
                     </BaseTable>
                 </div>
 
                 <!-- Tabel Item Selesai -->
-                <div v-if="completedItems.length > 0" class="mb-8">
-                    <div class="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-2xl p-6 border border-blue-200 mb-4">
-                        <h3 class="text-xl font-bold text-gray-800 flex items-center gap-3 mb-2">
-                            <span class="text-2xl">✅</span>
+                <div v-if="completedItems.length > 0" class="mb-6 md:mb-8">
+                    <div class="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl md:rounded-2xl p-4 md:p-6 border border-blue-200 mb-4">
+                        <h3 class="text-lg md:text-xl font-bold text-gray-800 flex items-center gap-2 md:gap-3 mb-2">
+                            <span class="text-xl md:text-2xl">✅</span>
                             Item Selesai
-                            <span class="text-sm font-normal text-gray-600 bg-white px-3 py-1 rounded-full">
+                            <span class="text-xs font-normal text-gray-600 bg-white px-2 py-1 rounded-full">
                                 {{ completedItems.length }} item
                             </span>
                         </h3>
-                        <p class="text-gray-600">
+                        <p class="text-gray-600 text-sm">
                             Item yang sudah selesai dikerjakan. Total sisa biaya yang telah dihabiskan: 
                             <span class="font-bold text-green-600">{{ formatCurrency(completedSummary.total_spent) }}</span>
                         </p>
@@ -1206,7 +1228,7 @@ watch(() => form.item_type, (newType) => {
                         <!-- Custom column for item type -->
                         <template #column-item_type="{ item }">
                             <div class="flex items-center gap-2">
-                                <span class="text-lg">{{ item.item_type_icon }}</span>
+                                <span class="text-base md:text-lg">{{ item.item_type_icon }}</span>
                                 <span 
                                     class="px-2 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-700"
                                 >
@@ -1218,8 +1240,8 @@ watch(() => form.item_type, (newType) => {
                         <!-- Custom column for planned amount -->
                         <template #column-planned_amount="{ item }">
                             <div class="flex items-center gap-2">
-                                <span class="text-lg text-blue-600">💰</span>
-                                <span class="font-bold text-gray-800 text-sm text-blue-700">
+                                <span class="text-base md:text-lg text-blue-600">💰</span>
+                                <span class="font-bold text-gray-800 text-xs md:text-sm text-blue-700">
                                     {{ formatCurrency(item.planned_amount) }}
                                 </span>
                             </div>
@@ -1228,8 +1250,8 @@ watch(() => form.item_type, (newType) => {
                         <!-- Custom column for actual spent -->
                         <template #column-actual_spent="{ item }">
                             <div class="flex items-center gap-2">
-                                <span class="text-lg text-green-600">💸</span>
-                                <span class="font-bold text-gray-800 text-sm text-green-700">
+                                <span class="text-base md:text-lg text-green-600">💸</span>
+                                <span class="font-bold text-gray-800 text-xs md:text-sm text-green-700">
                                     {{ formatCurrency(item.actual_spent) }}
                                 </span>
                             </div>
@@ -1238,7 +1260,7 @@ watch(() => form.item_type, (newType) => {
                         <!-- Custom column for status -->
                         <template #column-status="{ item }">
                             <div class="flex items-center gap-2">
-                                <span class="text-lg">✅</span>
+                                <span class="text-base md:text-lg">✅</span>
                                 <span class="px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
                                     Selesai
                                 </span>
@@ -1248,38 +1270,37 @@ watch(() => form.item_type, (newType) => {
                         <!-- Custom column for completed date -->
                         <template #column-completed_at="{ item }">
                             <div class="flex items-center gap-2">
-                                <span class="text-lg">📅</span>
-                                <span class="font-medium text-gray-700 text-sm">
-                                    {{ formatDate(item.updated_at) }} <!-- Gunakan updated_at sebagai tanggal selesai -->
+                                <span class="text-base md:text-lg">📅</span>
+                                <span class="font-medium text-gray-700 text-xs md:text-sm">
+                                    {{ formatDate(item.updated_at) }}
                                 </span>
                             </div>
                         </template>
 
-                                <!-- Custom actions slot -->
+                        <!-- Custom actions slot -->
                         <template #actions="{ item }">
-                            <BaseButton
-                                @click="openDetailsModal(item)"
-                                variant="primary"
-                                size="sm"
-                                class="!px-2 !py-2"
-                                title="Lihat detail item"
-                            >
-                                <template #icon>👁️</template>
-                                Detail
-                            </BaseButton>
-
+                                <BaseButton
+                                    @click="openEncryptedItem(item)"
+                                    variant="primary"
+                                    size="sm"
+                                    class="!px-2 !py-1 text-xs"
+                                    title="Lihat detail item"
+                                >
+                                    <template #icon>👁️</template>
+                                    <span class="hidden xs:inline">Detail</span>
+                                </BaseButton>
                         </template>
                     </BaseTable>
                 </div>
 
                 <!-- Empty State untuk kedua tabel -->
                 <div v-if="filteredItems.length === 0 && !loading" class="text-center mt-6">
-                    <div class="bg-white/80 backdrop-blur-md rounded-3xl shadow-lg p-8 border border-gray-100">
-                        <div class="text-6xl mb-4">📋</div>
-                        <h3 class="text-xl font-bold text-gray-800 mb-2">
+                    <div class="bg-white/80 backdrop-blur-md rounded-xl md:rounded-2xl shadow-lg p-6 md:p-8 border border-gray-100">
+                        <div class="text-4xl md:text-6xl mb-4">📋</div>
+                        <h3 class="text-lg md:text-xl font-bold text-gray-800 mb-2">
                             {{ items.length === 0 ? 'Belum ada item' : 'Tidak ada item yang sesuai filter' }}
                         </h3>
-                        <p class="text-gray-600 mb-6 max-w-md mx-auto">
+                        <p class="text-gray-600 mb-6 text-sm md:text-base max-w-md mx-auto">
                             <span v-if="items.length === 0">
                                 Mulai dengan menambahkan item pertama untuk project {{ project.name }}
                             </span>
@@ -1287,10 +1308,10 @@ watch(() => form.item_type, (newType) => {
                                 Coba ubah filter atau hapus filter untuk melihat semua item
                             </span>
                         </p>
-                        <div class="flex gap-3 justify-center">
+                        <div class="flex gap-2 md:gap-3 justify-center">
                             <BaseButton
                                 @click="openCreateModal"
-                                class="px-6 py-3"
+                                class="px-4 py-2 md:px-6 md:py-3 text-sm md:text-base"
                                 v-if="items.length === 0"
                             >
                                 <template #icon>➕</template>
@@ -1299,7 +1320,7 @@ watch(() => form.item_type, (newType) => {
                             <BaseButton
                                 @click="filters = { item_type: '', status: '' }"
                                 variant="secondary"
-                                class="px-6 py-3"
+                                class="px-4 py-2 md:px-6 md:py-3 text-sm md:text-base"
                                 v-else
                             >
                                 <template #icon>🔍</template>
@@ -1311,18 +1332,18 @@ watch(() => form.item_type, (newType) => {
 
                 <!-- Empty State khusus untuk item aktif -->
                 <div v-else-if="activeItems.length === 0 && completedItems.length > 0 && !loading" class="text-center mt-6">
-                    <div class="bg-white/80 backdrop-blur-md rounded-3xl shadow-lg p-8 border border-gray-100">
-                        <div class="text-6xl mb-4">🎉</div>
-                        <h3 class="text-xl font-bold text-gray-800 mb-2">
+                    <div class="bg-white/80 backdrop-blur-md rounded-xl md:rounded-2xl shadow-lg p-6 md:p-8 border border-gray-100">
+                        <div class="text-4xl md:text-6xl mb-4">🎉</div>
+                        <h3 class="text-lg md:text-xl font-bold text-gray-800 mb-2">
                             Semua Item Sudah Selesai!
                         </h3>
-                        <p class="text-gray-600 mb-6 max-w-md mx-auto">
+                        <p class="text-gray-600 mb-6 text-sm md:text-base max-w-md mx-auto">
                             Selamat! Semua item untuk project {{ project.name }} sudah selesai dikerjakan. 
                             Anda bisa menambahkan item baru jika diperlukan.
                         </p>
                         <BaseButton
                             @click="openCreateModal"
-                            class="px-6 py-3"
+                            class="px-4 py-2 md:px-6 md:py-3 text-sm md:text-base"
                         >
                             <template #icon>➕</template>
                             Tambah Item Baru
@@ -1344,7 +1365,7 @@ watch(() => form.item_type, (newType) => {
                     @close="closeModal"
                     size="xl"
                 >
-                    <div class="space-y-6 max-h-[70vh] overflow-y-auto pr-2">
+                    <div class="space-y-4 md:space-y-6 max-h-[50vh] md:max-h-[60vh] overflow-y-auto pr-2">
                         <!-- Item Type -->
                         <SelectInput
                             v-model="form.item_type"
@@ -1358,69 +1379,69 @@ watch(() => form.item_type, (newType) => {
                         />
 
                         <!-- Item Category Section -->
-<div class="space-y-4">
-    <div class="flex items-center justify-between">
-        <label class="block text-sm font-medium text-gray-700 flex items-center gap-2">
-            <span class="text-lg">📂</span>
-            Kategori Item
-        </label>
-        
-        <!-- Toggle antara input baru dan pilih yang ada -->
-        <div v-if="hasExistingCategories && !editingItem" class="flex gap-2">
-            <BaseButton
-                @click="showCategoryInput = false"
-                variant="secondary"
-                size="xs"
-                :class="!shouldShowCategoryInput ? 'ring-2 ring-pink-400' : ''"
-            >
-                <template #icon>📋</template>
-                Pilih Kategori
-            </BaseButton>
-            <BaseButton
-                @click="showCategoryInput = true"
-                variant="secondary"
-                size="xs"
-                :class="shouldShowCategoryInput ? 'ring-2 ring-pink-400' : ''"
-            >
-                <template #icon>➕</template>
-                Kategori Baru
-            </BaseButton>
-        </div>
-    </div>
+                        <div class="space-y-3 md:space-y-4">
+                            <div class="flex items-center justify-between">
+                                <label class="block text-sm font-medium text-gray-700 flex items-center gap-2">
+                                    <span class="text-base md:text-lg">📂</span>
+                                    Kategori Item
+                                </label>
+                                
+                                <!-- Toggle antara input baru dan pilih yang ada -->
+                                <div v-if="hasExistingCategories && !editingItem" class="flex gap-2">
+                                    <BaseButton
+                                        @click="showCategoryInput = false"
+                                        variant="secondary"
+                                        size="xs"
+                                        :class="!shouldShowCategoryInput ? 'ring-2 ring-pink-400' : ''"
+                                    >
+                                        <template #icon>📋</template>
+                                        Pilih
+                                    </BaseButton>
+                                    <BaseButton
+                                        @click="showCategoryInput = true"
+                                        variant="secondary"
+                                        size="xs"
+                                        :class="shouldShowCategoryInput ? 'ring-2 ring-pink-400' : ''"
+                                    >
+                                        <template #icon>➕</template>
+                                        Baru
+                                    </BaseButton>
+                                </div>
+                            </div>
 
-    <!-- Select Input untuk memilih kategori yang ada -->
-    <div v-if="!shouldShowCategoryInput && hasExistingCategories">
-        <SelectInput
-            v-model="form.item_category"
-            label="Pilih Kategori"
-            placeholder="Pilih kategori yang sudah ada"
-            :options="availableCategories.map(cat => ({ value: cat, label: cat }))"
-            :error="form.errors.item_category"
-            icon="📂"
-            :disabled="form.processing"
-        />
-        <p class="text-xs text-gray-500 mt-1">
-            Pilih dari {{ availableCategories.length }} kategori yang sudah ada
-        </p>
-    </div>
+                            <!-- Select Input untuk memilih kategori yang ada -->
+                            <div v-if="!shouldShowCategoryInput && hasExistingCategories">
+                                <SelectInput
+                                    v-model="form.item_category"
+                                    label="Pilih Kategori"
+                                    placeholder="Pilih kategori yang sudah ada"
+                                    :options="availableCategories.map(cat => ({ value: cat, label: cat }))"
+                                    :error="form.errors.item_category"
+                                    icon="📂"
+                                    :disabled="form.processing"
+                                />
+                                <p class="text-xs text-gray-500 mt-1">
+                                    Pilih dari {{ availableCategories.length }} kategori yang sudah ada
+                                </p>
+                            </div>
 
-    <!-- Text Input untuk kategori baru -->
-    <div v-else>
-        <TextInput
-            v-model="form.item_category"
-            label="Kategori Item"
-            placeholder="Contoh: Perlengkapan Kamar, Dekorasi, Katering, dll."
-            :error="form.errors.item_category"
-            icon="📂"
-            :disabled="form.processing"
-        />
-        <p class="text-xs text-gray-500 mt-1" v-if="hasExistingCategories">
-            Atau <button type="button" @click="showCategoryInput = false" class="text-pink-500 hover:text-pink-700 underline">
-            pilih dari kategori yang sudah ada
-            </button>
-        </p>
-    </div>
-</div>
+                            <!-- Text Input untuk kategori baru -->
+                            <div v-else>
+                                <TextInput
+                                    v-model="form.item_category"
+                                    label="Kategori Item"
+                                    placeholder="Contoh: Perlengkapan Kamar, Dekorasi, Katering, dll."
+                                    :error="form.errors.item_category"
+                                    icon="📂"
+                                    :disabled="form.processing"
+                                />
+                                <p class="text-xs text-gray-500 mt-1" v-if="hasExistingCategories">
+                                    Atau <button type="button" @click="showCategoryInput = false" class="text-pink-500 hover:text-pink-700 underline">
+                                    pilih dari kategori yang sudah ada
+                                    </button>
+                                </p>
+                            </div>
+                        </div>
 
                         <!-- Name -->
                         <TextInput
@@ -1444,40 +1465,37 @@ watch(() => form.item_type, (newType) => {
                         />
 
                         <!-- Input untuk Goods dan Material -->
-                        <div v-if="isGoodsOrMaterial" class="space-y-4">
+                        <div v-if="isGoodsOrMaterial" class="space-y-3 md:space-y-4">
                             <!-- Qty dan Unit Price -->
-                            <div class="grid grid-cols-2 gap-4">
+                            <div class="grid grid-cols-2 gap-3 md:gap-4">
                                 <!-- Quantity -->
-                                    <AccountInput
-                                        label="Qty Barang"
-                                        v-model="form.details.quantity"
-                                        placeholder="Jumlah barang"
-                                        icon="💰"
-                                        required
-                                        min="1"
-                                        :disabled="form.processing"
-                                        @input="updatePlannedAmount"
-                                    />
-
+                                <AccountInput
+                                    label="Qty Barang"
+                                    v-model="form.details.quantity"
+                                    placeholder="Jumlah barang"
+                                    icon="💰"
+                                    required
+                                    min="1"
+                                    :disabled="form.processing"
+                                    @input="updatePlannedAmount"
+                                />
 
                                 <!-- Harga Satuan -->
-                                    <AccountInput
-                                        label="Rencana Biaya"
-                                        v-model="form.details.unit_price"
-                                        placeholder="Harga per unit"
-                                        icon="💰"
-                                        required
-                                        account-type="account_number"
-                                        min="0"
-                                        :disabled="form.processing"
-                                        @input="updatePlannedAmount"
-
-                                    />
-                        
+                                <AccountInput
+                                    label="Rencana Biaya"
+                                    v-model="form.details.unit_price"
+                                    placeholder="Harga per unit"
+                                    icon="💰"
+                                    required
+                                    account-type="account_number"
+                                    min="0"
+                                    :disabled="form.processing"
+                                    @input="updatePlannedAmount"
+                                />
                             </div>
 
                             <!-- Hasil Perhitungan -->
-                            <div class="bg-gradient-to-r from-green-50 to-emerald-50 rounded-2xl p-4 border border-green-200">
+                            <div class="bg-gradient-to-r from-green-50 to-emerald-50 rounded-xl md:rounded-2xl p-3 md:p-4 border border-green-200">
                                 <div class="flex items-center justify-between">
                                     <div>
                                         <p class="text-sm font-medium text-gray-700">Total Rencana Biaya:</p>
@@ -1486,7 +1504,7 @@ watch(() => form.item_type, (newType) => {
                                         </p>
                                     </div>
                                     <div class="text-right">
-                                        <p class="text-xl font-bold text-green-600">
+                                        <p class="text-lg md:text-xl font-bold text-green-600">
                                             {{ formatCurrency(calculatedPlannedAmount) }}
                                         </p>
                                         <p class="text-xs text-gray-500">Terhitung otomatis</p>
@@ -1499,7 +1517,7 @@ watch(() => form.item_type, (newType) => {
                         </div>
 
                         <!-- Input Planned Amount untuk jenis item lainnya -->
-                        <div v-else class="grid grid-cols-1 gap-4">
+                        <div v-else class="grid grid-cols-1 gap-3 md:gap-4">
                             <!-- Planned Amount -->
                             <AccountInput
                                 v-model="form.planned_amount"
@@ -1519,26 +1537,26 @@ watch(() => form.item_type, (newType) => {
                         <input type="hidden" v-model="form.status" />
 
                         <!-- Dynamic Detail Fields -->
-                        <div v-if="detailFields.length > 0" class="space-y-4">
-                            <div class="bg-gradient-to-r from-pink-50 to-rose-50 rounded-2xl p-4 border border-pink-100">
-                                <h4 class="font-semibold text-gray-800 flex items-center gap-2 text-lg mb-4">
+                        <div v-if="detailFields.length > 0" class="space-y-3 md:space-y-4">
+                            <div class="bg-gradient-to-r from-pink-50 to-rose-50 rounded-xl md:rounded-2xl p-3 md:p-4 border border-pink-100">
+                                <h4 class="font-semibold text-gray-800 flex items-center gap-2 text-base md:text-lg mb-3 md:mb-4">
                                     <span>✨</span>
                                     Detail Tambahan
                                 </h4>
                                 
-                                <div class="space-y-4">
+                                <div class="space-y-3 md:space-y-4">
                                     <div v-for="field in detailFields" :key="field.key" class="space-y-2">
                                         <!-- Radio Button untuk Purchase Type -->
-                                        <div v-if="field.type === 'radio'" class="space-y-3">
+                                        <div v-if="field.type === 'radio'" class="space-y-2 md:space-y-3">
                                             <label class="block text-sm font-medium text-gray-700 flex items-center gap-2">
-                                                <span class="text-lg">{{ field.icon }}</span>
+                                                <span class="text-base md:text-lg">{{ field.icon }}</span>
                                                 {{ field.label }}
                                             </label>
-                                            <div class="flex gap-4">
+                                            <div class="flex gap-2 md:gap-4">
                                                 <label 
                                                     v-for="option in field.options" 
                                                     :key="option.value"
-                                                    class="flex items-center space-x-2 cursor-pointer p-3 rounded-xl border-2 transition-all"
+                                                    class="flex items-center space-x-2 cursor-pointer p-2 md:p-3 rounded-lg md:rounded-xl border-2 transition-all"
                                                     :class="form.details[field.key] === option.value 
                                                         ? 'border-pink-400 bg-pink-50 shadow-sm' 
                                                         : 'border-gray-200 hover:border-pink-200'"
@@ -1549,7 +1567,7 @@ watch(() => form.item_type, (newType) => {
                                                         v-model="form.details[field.key]"
                                                         class="text-pink-500 focus:ring-pink-400"
                                                     >
-                                                    <span class="text-sm font-medium text-gray-700">
+                                                    <span class="text-xs md:text-sm font-medium text-gray-700">
                                                         {{ option.label }}
                                                     </span>
                                                 </label>
@@ -1559,12 +1577,12 @@ watch(() => form.item_type, (newType) => {
                                         <!-- Select Input -->
                                         <div v-else-if="field.type === 'select'" class="space-y-2">
                                             <label class="block text-sm font-medium text-gray-700 flex items-center gap-2">
-                                                <span class="text-lg">{{ field.icon }}</span>
+                                                <span class="text-base md:text-lg">{{ field.icon }}</span>
                                                 {{ field.label }}
                                             </label>
                                             <select
                                                 v-model="form.details[field.key]"
-                                                class="w-full px-4 py-3 rounded-2xl border border-gray-300 focus:ring-2 focus:ring-pink-500 focus:border-transparent transition-all bg-white"
+                                                class="w-full px-3 md:px-4 py-2 md:py-3 rounded-xl md:rounded-2xl border border-gray-300 focus:ring-2 focus:ring-pink-500 focus:border-transparent transition-all bg-white text-sm"
                                             >
                                                 <option value="">Pilih {{ field.label.toLowerCase() }}</option>
                                                 <option v-for="option in field.options" :key="option.value" :value="option.value">
@@ -1576,55 +1594,55 @@ watch(() => form.item_type, (newType) => {
                                         <!-- Text Input -->
                                         <div v-else-if="field.type === 'text' || field.type === 'url'" class="space-y-2">
                                             <label class="block text-sm font-medium text-gray-700 flex items-center gap-2">
-                                                <span class="text-lg">{{ field.icon }}</span>
+                                                <span class="text-base md:text-lg">{{ field.icon }}</span>
                                                 {{ field.label }}
                                             </label>
                                             <input
                                                 :type="field.type"
                                                 v-model="form.details[field.key]"
                                                 :placeholder="field.placeholder || `Masukkan ${field.label.toLowerCase()}`"
-                                                class="w-full px-4 py-3 rounded-2xl border border-gray-300 focus:ring-2 focus:ring-pink-500 focus:border-transparent transition-all"
+                                                class="w-full px-3 md:px-4 py-2 md:py-3 rounded-xl md:rounded-2xl border border-gray-300 focus:ring-2 focus:ring-pink-500 focus:border-transparent transition-all text-sm"
                                             >
                                         </div>
 
                                         <!-- Textarea Input -->
                                         <div v-else-if="field.type === 'textarea'" class="space-y-2">
                                             <label class="block text-sm font-medium text-gray-700 flex items-center gap-2">
-                                                <span class="text-lg">{{ field.icon }}</span>
+                                                <span class="text-base md:text-lg">{{ field.icon }}</span>
                                                 {{ field.label }}
                                             </label>
                                             <textarea
                                                 v-model="form.details[field.key]"
                                                 :placeholder="field.placeholder || `Masukkan ${field.label.toLowerCase()}`"
                                                 rows="3"
-                                                class="w-full px-4 py-3 rounded-2xl border border-gray-300 focus:ring-2 focus:ring-pink-500 focus:border-transparent transition-all resize-none"
+                                                class="w-full px-3 md:px-4 py-2 md:py-3 rounded-xl md:rounded-2xl border border-gray-300 focus:ring-2 focus:ring-pink-500 focus:border-transparent transition-all resize-none text-sm"
                                             ></textarea>
                                         </div>
 
                                         <!-- Number Input -->
                                         <div v-else-if="field.type === 'number'" class="space-y-2">
                                             <label class="block text-sm font-medium text-gray-700 flex items-center gap-2">
-                                                <span class="text-lg">{{ field.icon }}</span>
+                                                <span class="text-base md:text-lg">{{ field.icon }}</span>
                                                 {{ field.label }}
                                             </label>
                                             <input
                                                 type="number"
                                                 v-model="form.details[field.key]"
                                                 :placeholder="field.placeholder || `Masukkan ${field.label.toLowerCase()}`"
-                                                class="w-full px-4 py-3 rounded-2xl border border-gray-300 focus:ring-2 focus:ring-pink-500 focus:border-transparent transition-all"
+                                                class="w-full px-3 md:px-4 py-2 md:py-3 rounded-xl md:rounded-2xl border border-gray-300 focus:ring-2 focus:ring-pink-500 focus:border-transparent transition-all text-sm"
                                             >
                                         </div>
 
                                         <!-- Date Input -->
                                         <div v-else-if="field.type === 'date'" class="space-y-2">
                                             <label class="block text-sm font-medium text-gray-700 flex items-center gap-2">
-                                                <span class="text-lg">{{ field.icon }}</span>
+                                                <span class="text-base md:text-lg">{{ field.icon }}</span>
                                                 {{ field.label }}
                                             </label>
                                             <input
                                                 type="date"
                                                 v-model="form.details[field.key]"
-                                                class="w-full px-4 py-3 rounded-2xl border border-gray-300 focus:ring-2 focus:ring-pink-500 focus:border-transparent transition-all"
+                                                class="w-full px-3 md:px-4 py-2 md:py-3 rounded-xl md:rounded-2xl border border-gray-300 focus:ring-2 focus:ring-pink-500 focus:border-transparent transition-all text-sm"
                                             >
                                         </div>
                                     </div>
@@ -1633,9 +1651,9 @@ watch(() => form.item_type, (newType) => {
                         </div>
 
                         <!-- Info Box -->
-                        <div class="p-4 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-2xl border border-blue-200">
-                            <p class="text-sm text-gray-700 flex items-start gap-2">
-                                <span class="text-lg mt-0.5">💡</span>
+                        <div class="p-3 md:p-4 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl md:rounded-2xl border border-blue-200">
+                            <p class="text-xs md:text-sm text-gray-700 flex items-start gap-2">
+                                <span class="text-base md:text-lg mt-0.5">💡</span>
                                 <span>
                                     <strong class="block">Jenis Item:</strong>
                                     • <strong>Barang 🛍️</strong>: Physical goods yang dibeli (hitung otomatis dari quantity × harga satuan)<br>
@@ -1648,8 +1666,8 @@ watch(() => form.item_type, (newType) => {
                         </div>
 
                         <!-- Error Summary -->
-                        <div v-if="form.hasErrors" class="p-2 bg-gradient-to-r from-red-50 to-pink-50 border border-red-200 rounded-2xl">
-                            <p class="text-sm text-red-600 flex items-center gap-2">
+                        <div v-if="form.hasErrors" class="p-2 bg-gradient-to-r from-red-50 to-pink-50 border border-red-200 rounded-xl md:rounded-2xl">
+                            <p class="text-xs md:text-sm text-red-600 flex items-center gap-2">
                                 <span>⚠️</span>
                                 Terdapat kesalahan dalam pengisian form. Silakan periksa kembali input Anda.
                             </p>
@@ -1666,123 +1684,122 @@ watch(() => form.item_type, (newType) => {
                     @close="showDetailsModal = false"
                     size="lg"
                 >
-                    <div v-if="selectedItem" class="space-y-6">
-<!-- Basic Info dengan layout yang lebih romantic -->
-<div class="bg-gradient-to-r from-pink-50 to-rose-50 rounded-2xl p-6 border border-pink-100">
-    <h3 class="font-semibold text-gray-800 text-lg mb-4 flex items-center gap-2">
-        <span>✨</span>
-        Informasi Dasar
-    </h3>
-    <div class="grid grid-cols-2 gap-4">
-        <div class="space-y-1">
-            <span class="text-sm text-gray-600 flex items-center gap-2">
-                <span class="text-lg">🏷️</span>
-                Jenis Item
-            </span>
-            <p class="font-medium text-gray-800 flex items-center gap-2">
-                <span>{{ selectedItem.item_type_icon }}</span>
-                {{ formatItemType(selectedItem.item_type) }}
-            </p>
-        </div>
-        <div class="space-y-1">
-            <span class="text-sm text-gray-600 flex items-center gap-2">
-                <span class="text-lg">🟢</span>
-                Status
-            </span>
-            <p class="font-medium text-gray-800 flex items-center gap-2">
-                <span>{{ selectedItem.status_icon }}</span>
-                {{ formatStatus(selectedItem.status) }}
-            </p>
-        </div>
-        <div class="space-y-1">
-            <span class="text-sm text-gray-600 flex items-center gap-2">
-                <span class="text-lg">💰</span>
-                Rencana Biaya
-            </span>
-            <p class="font-bold text-blue-700 text-lg">{{ formatCurrency(selectedItem.planned_amount) }}</p>
-            <p v-if="isItemGoodsOrMaterial(selectedItem)" class="text-xs text-gray-500">
-                Terhitung otomatis
-            </p>
-        </div>
-        <div class="space-y-1">
-            <span class="text-sm text-gray-600 flex items-center gap-2">
-                <span class="text-lg">💸</span>
-                Realisasi
-            </span>
-            <p class="font-bold text-orange-700 text-lg">{{ formatCurrency(selectedItem.actual_spent) }}</p>
-        </div>
-    </div>
-</div>
+                    <div v-if="selectedItem" class="space-y-4 md:space-y-6">
+                        <!-- Basic Info -->
+                        <div class="bg-gradient-to-r from-pink-50 to-rose-50 rounded-xl md:rounded-2xl p-4 md:p-6 border border-pink-100">
+                            <h3 class="font-semibold text-gray-800 text-base md:text-lg mb-3 md:mb-4 flex items-center gap-2">
+                                <span>✨</span>
+                                Informasi Dasar
+                            </h3>
+                            <div class="grid grid-cols-2 gap-3 md:gap-4">
+                                <div class="space-y-1">
+                                    <span class="text-xs text-gray-600 flex items-center gap-2">
+                                        <span class="text-base md:text-lg">🏷️</span>
+                                        Jenis Item
+                                    </span>
+                                    <p class="font-medium text-gray-800 flex items-center gap-2 text-sm md:text-base">
+                                        <span>{{ selectedItem.item_type_icon }}</span>
+                                        {{ formatItemType(selectedItem.item_type) }}
+                                    </p>
+                                </div>
+                                <div class="space-y-1">
+                                    <span class="text-xs text-gray-600 flex items-center gap-2">
+                                        <span class="text-base md:text-lg">🟢</span>
+                                        Status
+                                    </span>
+                                    <p class="font-medium text-gray-800 flex items-center gap-2 text-sm md:text-base">
+                                        <span>{{ selectedItem.status_icon }}</span>
+                                        {{ formatStatus(selectedItem.status) }}
+                                    </p>
+                                </div>
+                                <div class="space-y-1">
+                                    <span class="text-xs text-gray-600 flex items-center gap-2">
+                                        <span class="text-base md:text-lg">💰</span>
+                                        Rencana Biaya
+                                    </span>
+                                    <p class="font-bold text-blue-700 text-base md:text-lg">{{ formatCurrency(selectedItem.planned_amount) }}</p>
+                                    <p v-if="isItemGoodsOrMaterial(selectedItem)" class="text-xs text-gray-500">
+                                        Terhitung otomatis
+                                    </p>
+                                </div>
+                                <div class="space-y-1">
+                                    <span class="text-xs text-gray-600 flex items-center gap-2">
+                                        <span class="text-base md:text-lg">💸</span>
+                                        Realisasi
+                                    </span>
+                                    <p class="font-bold text-orange-700 text-base md:text-lg">{{ formatCurrency(selectedItem.actual_spent) }}</p>
+                                </div>
+                            </div>
+                        </div>
 
                         <!-- Quantity dan Harga Satuan untuk Goods dan Material -->
-<!-- Quantity dan Harga Satuan untuk Goods dan Material -->
-<div v-if="isItemGoodsOrMaterial(selectedItem) && selectedItem.details" 
-     class="bg-gradient-to-r from-indigo-50 to-purple-50 rounded-2xl p-6 border border-indigo-100">
-    <h3 class="font-semibold text-gray-800 text-lg mb-4 flex items-center gap-2">
-        <span>📊</span>
-        Informasi Kuantitas & Harga
-    </h3>
-    <div class="grid grid-cols-2 gap-4">
-        <!-- Quantity -->
-        <div class="space-y-1">
-            <span class="text-sm text-gray-600 flex items-center gap-2">
-                <span class="text-lg">📦</span>
-                Quantity
-            </span>
-            <p class="font-bold text-gray-800 text-lg">
-                {{ selectedItem.details.quantity || 0 }}
-                <span class="text-sm font-normal text-gray-500">unit</span>
-            </p>
-        </div>
+                        <div v-if="isItemGoodsOrMaterial(selectedItem) && selectedItem.details" 
+                             class="bg-gradient-to-r from-indigo-50 to-purple-50 rounded-xl md:rounded-2xl p-4 md:p-6 border border-indigo-100">
+                            <h3 class="font-semibold text-gray-800 text-base md:text-lg mb-3 md:mb-4 flex items-center gap-2">
+                                <span>📊</span>
+                                Informasi Kuantitas & Harga
+                            </h3>
+                            <div class="grid grid-cols-2 gap-3 md:gap-4">
+                                <!-- Quantity -->
+                                <div class="space-y-1">
+                                    <span class="text-xs text-gray-600 flex items-center gap-2">
+                                        <span class="text-base md:text-lg">📦</span>
+                                        Quantity
+                                    </span>
+                                    <p class="font-bold text-gray-800 text-base md:text-lg">
+                                        {{ selectedItem.details.quantity || 0 }}
+                                        <span class="text-xs font-normal text-gray-500">unit</span>
+                                    </p>
+                                </div>
 
-        <!-- Harga Satuan -->
-        <div class="space-y-1">
-            <span class="text-sm text-gray-600 flex items-center gap-2">
-                <span class="text-lg">💰</span>
-                Harga Satuan
-            </span>
-            <p class="font-bold text-green-600 text-lg">
-                {{ formatCurrency(selectedItem.details.unit_price || 0) }}
-            </p>
-        </div>
+                                <!-- Harga Satuan -->
+                                <div class="space-y-1">
+                                    <span class="text-xs text-gray-600 flex items-center gap-2">
+                                        <span class="text-base md:text-lg">💰</span>
+                                        Harga Satuan
+                                    </span>
+                                    <p class="font-bold text-green-600 text-base md:text-lg">
+                                        {{ formatCurrency(selectedItem.details.unit_price || 0) }}
+                                    </p>
+                                </div>
 
-        <!-- Perhitungan Total -->
-        <div class="col-span-2 space-y-1">
-            <span class="text-sm text-gray-600 flex items-center gap-2">
-                <span class="text-lg">🧮</span>
-                Perhitungan Total
-            </span>
-            <div class="bg-white/70 rounded-xl p-3 border border-gray-200">
-                <div class="flex items-center justify-between">
-                    <span class="text-sm text-gray-600">
-                        {{ selectedItem.details.quantity || 0 }} × {{ formatCurrency(selectedItem.details.unit_price || 0) }}
-                    </span>
-                    <span class="font-bold text-blue-600 text-lg">
-                        = {{ formatCurrency(selectedItem.planned_amount) }}
-                    </span>
-                </div>
-                <p class="text-xs text-gray-500 mt-1">
-                    Total rencana biaya dihitung otomatis dari quantity × harga satuan
-                </p>
-            </div>
-        </div>
-    </div>
-</div>
+                                <!-- Perhitungan Total -->
+                                <div class="col-span-2 space-y-1">
+                                    <span class="text-xs text-gray-600 flex items-center gap-2">
+                                        <span class="text-base md:text-lg">🧮</span>
+                                        Perhitungan Total
+                                    </span>
+                                    <div class="bg-white/70 rounded-lg md:rounded-xl p-2 md:p-3 border border-gray-200">
+                                        <div class="flex items-center justify-between">
+                                            <span class="text-xs text-gray-600">
+                                                {{ selectedItem.details.quantity || 0 }} × {{ formatCurrency(selectedItem.details.unit_price || 0) }}
+                                            </span>
+                                            <span class="font-bold text-blue-600 text-base md:text-lg">
+                                                = {{ formatCurrency(selectedItem.planned_amount) }}
+                                            </span>
+                                        </div>
+                                        <p class="text-xs text-gray-500 mt-1">
+                                            Total rencana biaya dihitung otomatis dari quantity × harga satuan
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
 
-                        <!-- Progress Bar yang lebih cantik -->
-                        <div class="bg-gradient-to-r from-blue-50 to-cyan-50 rounded-2xl p-6 border border-blue-100">
-                            <h3 class="font-semibold text-gray-800 text-lg mb-4 flex items-center gap-2">
+                        <!-- Progress Bar -->
+                        <div class="bg-gradient-to-r from-blue-50 to-cyan-50 rounded-xl md:rounded-2xl p-4 md:p-6 border border-blue-100">
+                            <h3 class="font-semibold text-gray-800 text-base md:text-lg mb-3 md:mb-4 flex items-center gap-2">
                                 <span>📈</span>
                                 Progress Keuangan
                             </h3>
-                            <div class="space-y-3">
-                                <div class="flex justify-between text-sm">
+                            <div class="space-y-2 md:space-y-3">
+                                <div class="flex justify-between text-xs md:text-sm">
                                     <span class="font-medium text-gray-700">{{ selectedItem.progress_percentage.toFixed(1) }}%</span>
                                     <span class="text-gray-600">{{ formatCurrency(selectedItem.actual_spent) }} / {{ formatCurrency(selectedItem.planned_amount) }}</span>
                                 </div>
-                                <div class="w-full bg-white rounded-full h-4 shadow-inner border">
+                                <div class="w-full bg-white rounded-full h-3 md:h-4 shadow-inner border">
                                     <div 
-                                        class="h-4 rounded-full transition-all duration-1000 bg-gradient-to-r from-pink-400 to-rose-500 shadow-lg"
+                                        class="h-3 md:h-4 rounded-full transition-all duration-1000 bg-gradient-to-r from-pink-400 to-rose-500 shadow-lg"
                                         :style="{ width: Math.min(selectedItem.progress_percentage, 100) + '%' }"
                                     ></div>
                                 </div>
@@ -1796,29 +1813,29 @@ watch(() => form.item_type, (newType) => {
                         </div>
 
                         <!-- Description -->
-                        <div v-if="selectedItem.description" class="bg-gradient-to-r from-green-50 to-emerald-50 rounded-2xl p-6 border border-green-100">
-                            <h3 class="font-semibold text-gray-800 text-lg mb-3 flex items-center gap-2">
+                        <div v-if="selectedItem.description" class="bg-gradient-to-r from-green-50 to-emerald-50 rounded-xl md:rounded-2xl p-4 md:p-6 border border-green-100">
+                            <h3 class="font-semibold text-gray-800 text-base md:text-lg mb-2 md:mb-3 flex items-center gap-2">
                                 <span>📄</span>
                                 Deskripsi
                             </h3>
-                            <p class="text-gray-700 leading-relaxed bg-white/50 p-4 rounded-xl">
+                            <p class="text-gray-700 leading-relaxed bg-white/50 p-3 md:p-4 rounded-lg md:rounded-xl text-sm">
                                 {{ selectedItem.description }}
                             </p>
                         </div>
 
                         <!-- Purchase Info untuk Barang -->
                         <div v-if="selectedItem.item_type === 'goods' && selectedItem.details && hasPurchaseDetails(selectedItem)" 
-                            class="bg-gradient-to-r from-purple-50 to-violet-50 rounded-2xl p-6 border border-purple-100">
-                            <h3 class="font-semibold text-gray-800 text-lg mb-4 flex items-center gap-2">
+                            class="bg-gradient-to-r from-purple-50 to-violet-50 rounded-xl md:rounded-2xl p-4 md:p-6 border border-purple-100">
+                            <h3 class="font-semibold text-gray-800 text-base md:text-lg mb-3 md:mb-4 flex items-center gap-2">
                                 <span>🛍️</span>
                                 Informasi Pembelian
                             </h3>
                             
-                            <div class="space-y-4">
+                            <div class="space-y-3 md:space-y-4">
                                 <!-- Purchase Type -->
-                                <div v-if="selectedItem.details.purchase_type" class="flex items-center justify-between p-3 bg-white rounded-xl border">
-                                    <span class="text-sm text-gray-600">Cara Pembelian:</span>
-                                    <span class="font-medium text-gray-800 flex items-center gap-2">
+                                <div v-if="selectedItem.details.purchase_type" class="flex items-center justify-between p-2 md:p-3 bg-white rounded-lg md:rounded-xl border">
+                                    <span class="text-xs text-gray-600">Cara Pembelian:</span>
+                                    <span class="font-medium text-gray-800 flex items-center gap-2 text-sm">
                                         <span v-if="selectedItem.details.purchase_type === 'online'">🛒</span>
                                         <span v-else>🏪</span>
                                         {{ selectedItem.details.purchase_type === 'online' ? 'Beli Online' : 'Beli di Toko' }}
@@ -1826,23 +1843,23 @@ watch(() => form.item_type, (newType) => {
                                 </div>
 
                                 <!-- Online Purchase Details -->
-                                <div v-if="selectedItem.details.purchase_type === 'online'" class="space-y-3">
-                                    <div v-if="selectedItem.details.ecommerce_platform" class="flex items-center justify-between p-3 bg-white rounded-xl border">
-                                        <span class="text-sm text-gray-600">Platform:</span>
-                                        <span class="font-medium flex items-center gap-2" :class="ecommercePlatforms[selectedItem.details.ecommerce_platform]?.color">
+                                <div v-if="selectedItem.details.purchase_type === 'online'" class="space-y-2 md:space-y-3">
+                                    <div v-if="selectedItem.details.ecommerce_platform" class="flex items-center justify-between p-2 md:p-3 bg-white rounded-lg md:rounded-xl border">
+                                        <span class="text-xs text-gray-600">Platform:</span>
+                                        <span class="font-medium flex items-center gap-2 text-sm" :class="ecommercePlatforms[selectedItem.details.ecommerce_platform]?.color">
                                             <span>{{ ecommercePlatforms[selectedItem.details.ecommerce_platform]?.icon }}</span>
                                             {{ ecommercePlatforms[selectedItem.details.ecommerce_platform]?.name }}
                                         </span>
                                     </div>
                                     
-                                    <div v-if="selectedItem.details.online_link" class="p-3 bg-white rounded-xl border">
+                                    <div v-if="selectedItem.details.online_link" class="p-2 md:p-3 bg-white rounded-lg md:rounded-xl border">
                                         <div class="flex items-center justify-between mb-2">
-                                            <span class="text-sm text-gray-600">Link Produk:</span>
+                                            <span class="text-xs text-gray-600">Link Produk:</span>
                                             <BaseButton
                                                 @click="openLink(selectedItem.details.online_link)"
                                                 variant="primary"
                                                 size="xs"
-                                                class="!px-3 !py-1"
+                                                class="!px-2 !py-1 text-xs"
                                             >
                                                 <template #icon>🔗</template>
                                                 Buka Link
@@ -1853,15 +1870,15 @@ watch(() => form.item_type, (newType) => {
                                 </div>
 
                                 <!-- Store Purchase Details -->
-                                <div v-if="selectedItem.details.purchase_type === 'store'" class="space-y-3">
-                                    <div v-if="selectedItem.details.store_maps" class="p-3 bg-white rounded-xl border">
+                                <div v-if="selectedItem.details.purchase_type === 'store'" class="space-y-2 md:space-y-3">
+                                    <div v-if="selectedItem.details.store_maps" class="p-2 md:p-3 bg-white rounded-lg md:rounded-xl border">
                                         <div class="flex items-center justify-between mb-2">
-                                            <span class="text-sm text-gray-600">Lokasi Toko:</span>
+                                            <span class="text-xs text-gray-600">Lokasi Toko:</span>
                                             <BaseButton
                                                 @click="openLink(selectedItem.details.store_maps)"
                                                 variant="primary"
                                                 size="xs"
-                                                class="!px-3 !py-1"
+                                                class="!px-2 !py-1 text-xs"
                                             >
                                                 <template #icon>🗺️</template>
                                                 Buka Maps
@@ -1870,18 +1887,18 @@ watch(() => form.item_type, (newType) => {
                                         <p class="text-xs text-gray-500 break-all">{{ selectedItem.details.store_maps }}</p>
                                     </div>
                                     
-                                    <div v-if="selectedItem.details.store_address" class="p-3 bg-white rounded-xl border">
-                                        <span class="text-sm text-gray-600 block mb-2">Alamat Toko:</span>
-                                        <p class="text-sm text-gray-700">{{ selectedItem.details.store_address }}</p>
+                                    <div v-if="selectedItem.details.store_address" class="p-2 md:p-3 bg-white rounded-lg md:rounded-xl border">
+                                        <span class="text-xs text-gray-600 block mb-2">Alamat Toko:</span>
+                                        <p class="text-xs text-gray-700">{{ selectedItem.details.store_address }}</p>
                                     </div>
                                 </div>
 
-                                <!-- Common Goods Details (tidak termasuk quantity dan unit_price) -->
-                                <div class="grid grid-cols-2 gap-3">
+                                <!-- Common Goods Details -->
+                                <div class="grid grid-cols-2 gap-2 md:gap-3">
                                     <div v-for="field in ['ukuran', 'warna', 'material', 'merk']" :key="field">
-                                        <div v-if="selectedItem.details[field]" class="p-3 bg-white rounded-xl border text-center">
+                                        <div v-if="selectedItem.details[field]" class="p-2 md:p-3 bg-white rounded-lg md:rounded-xl border text-center">
                                             <span class="text-xs text-gray-500 block capitalize">{{ field }}</span>
-                                            <span class="font-medium text-gray-800">{{ selectedItem.details[field] }}</span>
+                                            <span class="font-medium text-gray-800 text-sm">{{ selectedItem.details[field] }}</span>
                                         </div>
                                     </div>
                                 </div>
@@ -1889,49 +1906,50 @@ watch(() => form.item_type, (newType) => {
                         </div>
 
                         <!-- Other Details -->
-                        <div v-if="selectedItem.details && Object.keys(selectedItem.details).length > 0 && selectedItem.item_type !== 'goods'" class="bg-gradient-to-r from-orange-50 to-amber-50 rounded-2xl p-6 border border-orange-100">
-                            <h3 class="font-semibold text-gray-800 text-lg mb-4 flex items-center gap-2">
+                        <div v-if="selectedItem.details && Object.keys(selectedItem.details).length > 0 && selectedItem.item_type !== 'goods'" class="bg-gradient-to-r from-orange-50 to-amber-50 rounded-xl md:rounded-2xl p-4 md:p-6 border border-orange-100">
+                            <h3 class="font-semibold text-gray-800 text-base md:text-lg mb-3 md:mb-4 flex items-center gap-2">
                                 <span>🔧</span>
                                 Detail Tambahan
                             </h3>
-                            <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-2 md:gap-3">
                                 <div 
                                     v-for="(value, key) in selectedItem.details" 
                                     :key="key" 
-                                    class="p-3 bg-white rounded-xl border hover:shadow-sm transition-shadow"
+                                    class="p-2 md:p-3 bg-white rounded-lg md:rounded-xl border hover:shadow-sm transition-shadow"
                                 >
                                     <span class="text-xs text-gray-500 block capitalize mb-1">{{ key.replace('_', ' ') }}</span>
-                                    <span class="font-medium text-gray-800 text-sm">{{ value }}</span>
+                                    <span class="font-medium text-gray-800 text-xs md:text-sm">{{ value }}</span>
                                 </div>
                             </div>
                         </div>
 
                         <!-- Timestamps -->
-                        <div class="bg-gradient-to-r from-gray-50 to-slate-50 rounded-2xl p-6 border border-gray-100">
-                            <h3 class="font-semibold text-gray-800 text-lg mb-4 flex items-center gap-2">
+                        <div class="bg-gradient-to-r from-gray-50 to-slate-50 rounded-xl md:rounded-2xl p-4 md:p-6 border border-gray-100">
+                            <h3 class="font-semibold text-gray-800 text-base md:text-lg mb-3 md:mb-4 flex items-center gap-2">
                                 <span>⏰</span>
                                 Informasi Waktu
                             </h3>
-                            <div class="grid grid-cols-2 gap-4">
-                                <div class="text-center p-3 bg-white rounded-xl border">
+                            <div class="grid grid-cols-2 gap-3 md:gap-4">
+                                <div class="text-center p-2 md:p-3 bg-white rounded-lg md:rounded-xl border">
                                     <span class="text-xs text-gray-500 block">Dibuat</span>
-                                    <span class="font-medium text-gray-800">{{ formatDate(selectedItem.created_at) }}</span>
+                                    <span class="font-medium text-gray-800 text-sm">{{ formatDate(selectedItem.created_at) }}</span>
                                 </div>
-                                <div class="text-center p-3 bg-white rounded-xl border">
+                                <div class="text-center p-2 md:p-3 bg-white rounded-lg md:rounded-xl border">
                                     <span class="text-xs text-gray-500 block">Diupdate</span>
-                                    <span class="font-medium text-gray-800">{{ formatDate(selectedItem.updated_at) }}</span>
+                                    <span class="font-medium text-gray-800 text-sm">{{ formatDate(selectedItem.updated_at) }}</span>
                                 </div>
                             </div>
                         </div>
+                        
                         <BaseButton
                             @click="$inertia.visit(route('projects.items.show', { project: project.id, item: selectedItem.id }))"
                             variant="primary"
                             size="sm"
-                            class="!px-2 !py-2"
+                            class="!px-2 !py-1 text-xs"
                             title="Lihat detail lengkap item"
                         >
                             <template #icon>👁️</template>
-                            Lihat detail lengkap item
+                            <span class="hidden xs:inline">Lihat detail lengkap item</span>
                         </BaseButton>
                     </div>
                 </BaseModal>
@@ -1949,10 +1967,10 @@ watch(() => form.item_type, (newType) => {
                     @confirm="deleteItem"
                     @close="showDeleteModal = false"
                 >
-                    <div class="space-y-4">
-                        <div class="p-4 bg-gradient-to-r from-red-50 to-orange-50 border border-red-200 rounded-2xl">
-                            <p class="text-sm text-red-600 flex items-start gap-2">
-                                <span class="text-lg mt-0.5">⚠️</span>
+                    <div class="space-y-3 md:space-y-4">
+                        <div class="p-3 md:p-4 bg-gradient-to-r from-red-50 to-orange-50 border border-red-200 rounded-xl md:rounded-2xl">
+                            <p class="text-xs md:text-sm text-red-600 flex items-start gap-2">
+                                <span class="text-base md:text-lg mt-0.5">⚠️</span>
                                 <span>
                                     <strong class="block">Tindakan ini tidak dapat dibatalkan!</strong>
                                     Semua data yang terkait dengan item ini akan hilang.
@@ -1960,12 +1978,12 @@ watch(() => form.item_type, (newType) => {
                             </p>
                         </div>
 
-                        <div v-if="itemToDelete" class="p-4 bg-gradient-to-r from-gray-50 to-blue-50 border border-gray-200 rounded-2xl">
-                            <h4 class="font-semibold text-gray-800 mb-2">Detail Item:</h4>
-                            <div class="grid grid-cols-2 gap-4 text-sm">
+                        <div v-if="itemToDelete" class="p-3 md:p-4 bg-gradient-to-r from-gray-50 to-blue-50 border border-gray-200 rounded-xl md:rounded-2xl">
+                            <h4 class="font-semibold text-gray-800 text-sm md:text-base mb-2">Detail Item:</h4>
+                            <div class="grid grid-cols-1 xs:grid-cols-2 gap-3 md:gap-4 text-xs md:text-sm">
                                 <div>
                                     <span class="text-gray-600">Nama:</span>
-                                    <p class="font-medium text-gray-800">{{ itemToDelete.name }}</p>
+                                    <p class="font-medium text-gray-800 truncate">{{ itemToDelete.name }}</p>
                                 </div>
                                 <div>
                                     <span class="text-gray-600">Jenis:</span>
@@ -1997,22 +2015,66 @@ watch(() => form.item_type, (newType) => {
 </template>
 
 <style scoped>
+/* Utility classes untuk mobile */
+.line-clamp-2 {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+/* Improve scrolling on mobile */
+@media (max-width: 640px) {
+    .overflow-x-auto {
+        -webkit-overflow-scrolling: touch;
+        scrollbar-width: none;
+        -ms-overflow-style: none;
+    }
+    
+    .overflow-x-auto::-webkit-scrollbar {
+        display: none;
+    }
+}
+
+/* Breakpoint untuk screen sangat kecil */
+@media (max-width: 475px) {
+    .xs\:inline {
+        display: inline !important;
+    }
+    
+    .xs\:hidden {
+        display: none !important;
+    }
+    
+    .xs\:col-span-2 {
+        grid-column: span 2 / span 2;
+    }
+    
+    .xs\:grid-cols-2 {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
 /* Custom scrollbar untuk modal */
-.max-h-\[70vh\]::-webkit-scrollbar {
-    width: 6px;
+.max-h-\[50vh\]::-webkit-scrollbar,
+.max-h-\[60vh\]::-webkit-scrollbar {
+    width: 4px;
 }
 
-.max-h-\[70vh\]::-webkit-scrollbar-track {
+.max-h-\[50vh\]::-webkit-scrollbar-track,
+.max-h-\[60vh\]::-webkit-scrollbar-track {
     background: rgba(255, 255, 255, 0.1);
-    border-radius: 10px;
+    border-radius: 8px;
 }
 
-.max-h-\[70vh\]::-webkit-scrollbar-thumb {
+.max-h-\[50vh\]::-webkit-scrollbar-thumb,
+.max-h-\[60vh\]::-webkit-scrollbar-thumb {
     background: linear-gradient(to bottom, #f472b6, #60a5fa);
-    border-radius: 10px;
+    border-radius: 8px;
 }
 
-.max-h-\[70vh\]::-webkit-scrollbar-thumb:hover {
+.max-h-\[50vh\]::-webkit-scrollbar-thumb:hover,
+.max-h-\[60vh\]::-webkit-scrollbar-thumb:hover {
     background: linear-gradient(to bottom, #ec4899, #3b82f6);
 }
 </style>

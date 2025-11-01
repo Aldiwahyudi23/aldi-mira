@@ -1,16 +1,16 @@
 <template>
-  <div class="checklist-manager bg-gradient-to-br from-white via-pink-50 to-rose-50 rounded-3xl shadow-sm p-4 border border-pink-100">
+  <div class="checklist-manager bg-gradient-to-br from-white via-pink-50 to-rose-50 rounded-xl md:rounded-2xl shadow-sm p-3 md:p-4 border border-pink-100">
     <!-- Header -->
-    <div class="flex flex-col md:flex-row md:items-center md:justify-between mb-4 gap-2">
+    <div class="flex flex-col md:flex-row md:items-center md:justify-between mb-3 md:mb-4 gap-2">
       <!-- Left Side -->
-      <div class="flex items-center gap-3">
-        <div class="w-10 h-10 bg-gradient-to-r from-pink-400 to-rose-500 rounded-xl flex items-center justify-center shadow-md">
-          <span class="text-lg text-white">📋</span>
+      <div class="flex items-center gap-2 md:gap-3">
+        <div class="w-8 h-8 md:w-10 md:h-10 bg-gradient-to-r from-pink-400 to-rose-500 rounded-lg md:rounded-xl flex items-center justify-center shadow-md">
+          <span class="text-base md:text-lg text-white">📋</span>
         </div>
         <div>
-          <h3 class="font-bold text-gray-800 text-lg">Checklist Detail</h3>
-          <p class="text-sm text-gray-600">
-            Kelola langkah-langkah detail untuk
+          <h3 class="font-bold text-gray-800 text-base md:text-lg">Checklist Detail</h3>
+          <p class="text-xs md:text-sm text-gray-600">
+            Kelola langkah-langkah untuk
             <span class="font-semibold text-pink-600">{{ itemName }}</span>
             <span class="text-rose-500 font-semibold ml-1">({{ progressPercentage }}%)</span>
           </p>
@@ -18,14 +18,14 @@
       </div>
 
       <!-- Progress Info -->
-      <div class="flex items-center gap-3">
+      <div class="flex items-center gap-2 md:gap-3">
         <div class="text-right">
-          <div class="text-sm font-semibold text-gray-700">
+          <div class="text-xs md:text-sm font-semibold text-gray-700">
             {{ completedCount }} / {{ totalCount }} selesai
           </div>
-          <div class="w-28 bg-gray-200 rounded-full h-2 overflow-hidden">
+          <div class="w-24 md:w-28 bg-gray-200 rounded-full h-1.5 md:h-2 overflow-hidden">
             <div
-              class="h-2 rounded-full transition-all duration-500 bg-gradient-to-r from-pink-400 to-rose-500"
+              class="h-1.5 md:h-2 rounded-full transition-all duration-500 bg-gradient-to-r from-pink-400 to-rose-500"
               :style="{ width: progressPercentage + '%' }"
             ></div>
           </div>

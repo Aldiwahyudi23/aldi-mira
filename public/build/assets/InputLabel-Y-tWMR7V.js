@@ -1,1 +1,0 @@
-import{c as e,g as t,z as n,n as o}from"./vendor-CaulYgOW.js";const l={class:"block font-medium text-sm text-gray-700"},c={key:0},r={key:1},u={__name:"InputLabel",props:{value:String},setup(s){return(a,_)=>(t(),e("label",l,[s.value?(t(),e("span",c,n(s.value),1)):(t(),e("span",r,[o(a.$slots,"default")]))]))}};export{u as _};

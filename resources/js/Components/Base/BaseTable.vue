@@ -1,16 +1,18 @@
 <template>
-    <div class="bg-white/80 backdrop-blur-sm rounded-2xl shadow-xl border border-white/50 overflow-hidden">
+    <div class="bg-white/80 backdrop-blur-sm rounded-xl md:rounded-2xl shadow-lg md:shadow-xl border border-white/50 overflow-hidden">
         <!-- Table Header dengan gradient romantis -->
-        <div class="bg-gradient-to-r from-pink-400/10 to-sky-400/10 py-3 px-3 border-b border-pink-100">
+        <div class="bg-gradient-to-r from-pink-400/10 to-sky-400/10 py-3 md:py-4 px-3 md:px-4 border-b border-pink-100">
             <div class="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-3">
                 <div class="flex-1 min-w-0">
-                    <h2 class="text-2xl font-bold bg-gradient-to-r from-pink-600 to-sky-600 bg-clip-text text-transparent mb-2">
+                    <!-- =============================================================== -->
+                    <h2 class="text-lg md:text-xl lg:text-2xl font-bold bg-gradient-to-r from-pink-600 to-sky-600 bg-clip-text text-transparent mb-1 md:mb-2">
                         {{ title }}
                     </h2>
-                    <p class="text-gray-600 flex items-center gap-2">
+                    <p class="text-gray-600 flex items-center gap-2 text-xs md:text-sm">
                         <span class="text-pink-400">📊</span>
                         {{ description }}
                     </p>
+                    <!-- =============================================================== -->
                 </div>
                 
                 <div class="flex flex-nowrap items-center gap-2 w-full lg:w-auto">
@@ -20,9 +22,9 @@
                             v-model="searchTerm"
                             type="text"
                             placeholder="Cari..."
-                            class="pl-12 pr-4 py-2 border border-gray-200 rounded-2xl focus:ring-2 focus:ring-pink-300 focus:border-pink-300 transition-all duration-300 bg-white/50 backdrop-blur-sm w-full lg:w-64 text-base"
+                            class="pl-10 md:pl-12 pr-3 md:pr-4 py-2 border border-gray-200 rounded-lg md:rounded-xl focus:ring-2 focus:ring-pink-300 focus:border-pink-300 transition-all duration-300 bg-white/50 backdrop-blur-sm w-full lg:w-48 xl:w-64 text-sm md:text-base"
                         >
-                        <div class="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 text-lg">
+                        <div class="absolute left-3 md:left-4 top-1/2 transform -translate-y-1/2 text-gray-400 text-base md:text-lg">
                             🔍
                         </div>
                     </div>
@@ -32,11 +34,12 @@
                         <BaseButton
                             v-if="showCreateButton"
                             @click="$emit('create')"
-                            class="whitespace-nowrap flex-shrink-0"
+                            class="whitespace-nowrap flex-shrink-0 text-xs md:text-sm"
+                            size="sm"
                         >
                             <template #icon>➕</template>
-                            <span class=" sm:inline">Tambah {{ title }}</span>
-                            <span class="hidden sm:hidden">Tambah</span>
+                            <span class="hidden xs:inline">Tambah {{ title }}</span>
+                            <span class="xs:hidden">Tambah</span>
                         </BaseButton>
                     </slot>
                 </div>
@@ -51,25 +54,25 @@
                         <th
                             v-for="column in columns"
                             :key="column.key"
-                            class="px-6 py-4 text-left text-sm font-semibold text-gray-700 whitespace-nowrap"
+                            class="px-3 md:px-4 lg:px-6 py-3 md:py-4 text-left text-xs md:text-sm font-semibold text-gray-700 whitespace-nowrap"
                             :class="column.class"
                         >
-                            <div class="flex items-center gap-2">
-                                <span v-if="column.icon" class="text-pink-400">{{ column.icon }}</span>
-                                {{ column.label }}
+                            <div class="flex items-center gap-1 md:gap-2">
+                                <span v-if="column.icon" class="text-pink-400 text-sm md:text-base">{{ column.icon }}</span>
+                                <span class="truncate">{{ column.label }}</span>
                                 <button
                                     v-if="column.sortable"
                                     @click="sortColumn(column.key)"
-                                    class="text-gray-400 hover:text-pink-500 transition-colors"
+                                    class="text-gray-400 hover:text-pink-500 transition-colors text-xs md:text-sm ml-1"
                                 >
                                     {{ sortKey === column.key ? (sortDirection === 'asc' ? '↑' : '↓') : '↕' }}
                                 </button>
                             </div>
                         </th>
-                        <th v-if="showActions" class="px-6 py-4 text-right text-sm font-semibold text-gray-700 whitespace-nowrap">
-                            <div class="flex items-center gap-2 justify-end">
-                                <span class="text-pink-400">⚡</span>
-                                Aksi
+                        <th v-if="showActions" class="px-3 md:px-4 lg:px-6 py-3 md:py-4 text-right text-xs md:text-sm font-semibold text-gray-700 whitespace-nowrap">
+                            <div class="flex items-center gap-1 md:gap-2 justify-end">
+                                <span class="text-pink-400 text-sm md:text-base">⚡</span>
+                                <span class="truncate">Aksi</span>
                             </div>
                         </th>
                     </tr>
@@ -83,37 +86,37 @@
                         <td
                             v-for="column in columns"
                             :key="column.key"
-                            class="px-6 py-4 text-sm text-gray-700 whitespace-nowrap"
+                            class="px-3 md:px-4 lg:px-6 py-3 md:py-4 text-xs md:text-sm text-gray-700 whitespace-nowrap"
                             :class="column.class"
                         >
                             <slot :name="`column-${column.key}`" :item="item">
                                 <div v-if="column.type === 'badge'" class="inline-flex">
                                     <span
-                                        class="px-3 py-1 rounded-full text-xs font-medium shadow-sm"
+                                        class="px-2 md:px-3 py-1 rounded-full text-xs font-medium shadow-sm"
                                         :class="getBadgeClasses(item[column.key], column.badgeVariant)"
                                     >
                                         {{ getBadgeText(item[column.key], column.badgeMap) }}
                                     </span>
                                 </div>
-                                <div v-else-if="column.type === 'icon'" class="text-xl">
+                                <div v-else-if="column.type === 'icon'" class="text-base md:text-lg">
                                     {{ getIcon(item[column.key], column.iconMap) }}
                                 </div>
-                                <div v-else-if="column.type === 'avatar'" class="flex items-center gap-3">
-                                    <div class="w-8 h-8 rounded-full bg-gradient-to-r from-pink-300 to-sky-300 flex items-center justify-center text-white text-sm font-bold">
+                                <div v-else-if="column.type === 'avatar'" class="flex items-center gap-2 md:gap-3">
+                                    <div class="w-6 h-6 md:w-8 md:h-8 rounded-full bg-gradient-to-r from-pink-300 to-sky-300 flex items-center justify-center text-white text-xs md:text-sm font-bold">
                                         {{ getInitials(item[column.key]) }}
                                     </div>
-                                    <span>{{ item[column.key] }}</span>
+                                    <span class="truncate max-w-[80px] md:max-w-none">{{ item[column.key] }}</span>
                                 </div>
-                                <div v-else-if="column.type === 'date'" class="text-gray-600">
+                                <div v-else-if="column.type === 'date'" class="text-gray-600 text-xs md:text-sm">
                                     {{ formatDate(item[column.key]) }}
                                 </div>
-                                <span v-else class="text-gray-700">
+                                <span v-else class="text-gray-700 truncate max-w-[100px] md:max-w-none block">
                                     {{ item[column.key] }}
                                 </span>
                             </slot>
                         </td>
-                        <td v-if="showActions" class="px-6 py-4 text-right whitespace-nowrap">
-                            <div class="flex justify-end gap-2">
+                        <td v-if="showActions" class="px-3 md:px-4 lg:px-6 py-3 md:py-4 text-right whitespace-nowrap">
+                            <div class="flex justify-end gap-1 md:gap-2">
                                 <slot name="actions" :item="item"></slot>
                             </div>
                         </td>
@@ -123,15 +126,19 @@
         </div>
 
         <!-- Empty State -->
-        <div v-if="filteredData.length === 0 && !loading" class="text-center py-8">
-            <div class="text-6xl mb-4 text-gray-300">📝</div>
-            <h3 class="text-lg font-medium text-gray-900 mb-2">Data belum tersedia</h3>
-            <p class="text-gray-500 mb-6 max-w-md mx-auto">
+        <div v-if="filteredData.length === 0 && !loading" class="text-center py-6 md:py-8">
+            <!-- =============================================================== -->
+            <div class="text-4xl md:text-6xl mb-3 md:mb-4 text-gray-300">📝</div>
+            <h3 class="text-base md:text-lg font-medium text-gray-900 mb-1 md:mb-2">Data belum tersedia</h3>
+            <p class="text-gray-500 mb-4 md:mb-6 text-xs md:text-sm max-w-md mx-auto px-2">
                 {{ emptyDescription || `Belum ada data ${title.toLowerCase()} yang tersedia. Mulai dengan menambahkan data pertama Anda.` }}
             </p>
+            <!-- =============================================================== -->
             <BaseButton
                 v-if="showCreateButton"
                 @click="$emit('create')"
+                size="md"
+                class="text-xs md:text-sm"
             >
                 <template #icon>➕</template>
                 Tambah Data Pertama
@@ -139,16 +146,18 @@
         </div>
 
         <!-- Loading State -->
-        <div v-if="loading" class="text-center py-8">
-            <div class="animate-spin text-4xl mb-4 text-pink-400">⏳</div>
-            <p class="text-gray-500">Memuat data...</p>
+        <div v-if="loading" class="text-center py-6 md:py-8">
+            <!-- =============================================================== -->
+            <div class="animate-spin text-3xl md:text-4xl mb-3 md:mb-4 text-pink-400">⏳</div>
+            <p class="text-gray-500 text-xs md:text-sm">Memuat data...</p>
+            <!-- =============================================================== -->
         </div>
 
         <!-- Pagination -->
-        <div v-if="pagination && filteredData.length > 0" class="bg-gradient-to-r from-pink-50/30 to-sky-50/30 px-4 py-3 border-t border-pink-100">
-            <div class="flex flex-col lg:flex-row justify-between items-center gap-4">
+        <div v-if="pagination && filteredData.length > 0" class="bg-gradient-to-r from-pink-50/30 to-sky-50/30 px-3 md:px-4 py-3 border-t border-pink-100">
+            <div class="flex flex-col lg:flex-row justify-between items-center gap-3 md:gap-4">
                 <!-- Info jumlah data -->
-                <div class="flex items-center gap-4 text-sm text-gray-600">
+                <div class="flex flex-col sm:flex-row items-start sm:items-center gap-2 md:gap-4 text-xs md:text-sm text-gray-600">
                     <span>Menampilkan {{ startIndex }} - {{ endIndex }} dari {{ totalItems }} data</span>
                     
                     <!-- Pilihan items per page -->
@@ -156,37 +165,37 @@
                         <span>Tampilkan:</span>
                         <select 
                             v-model="itemsPerPage"
-                            class="border border-gray-300 rounded-lg px-2 py-1 text-sm focus:ring-2 focus:ring-pink-300 focus:border-pink-300"
+                            class="border border-gray-300 rounded-lg px-2 py-1 text-xs md:text-sm focus:ring-2 focus:ring-pink-300 focus:border-pink-300"
                             @change="currentPage = 1"
                         >
                             <option value="5">5</option>
                             <option value="10">10</option>
                             <option value="25">25</option>
                             <option value="50">50</option>
-                            <option value="100">100</option>
                         </select>
-                        <span>per halaman</span>
+                        <span class="hidden sm:inline">per halaman</span>
                     </div>
                 </div>
 
                 <!-- Navigasi halaman -->
-                <div class="flex items-center gap-2">
+                <div class="flex items-center gap-1 md:gap-2">
                     <!-- Tombol Previous -->
                     <BaseButton
                         variant="secondary"
                         size="sm"
                         :disabled="currentPage === 1"
                         @click="currentPage--"
+                        class="!px-2 md:!px-3 !py-1 text-xs"
                     >
                         <template #icon>⬅️</template>
-                        Sebelumnya
+                        <span class="hidden xs:inline">Sebelumnya</span>
                     </BaseButton>
 
                     <!-- Info halaman -->
-                    <div class="flex items-center gap-1 mx-2">
-                        <span class="text-sm text-gray-600">Halaman</span>
-                        <span class="font-semibold text-pink-600">{{ currentPage }}</span>
-                        <span class="text-sm text-gray-600">dari {{ totalPages }}</span>
+                    <div class="flex items-center gap-1 mx-1 md:mx-2">
+                        <span class="text-xs md:text-sm text-gray-600">Halaman</span>
+                        <span class="font-semibold text-pink-600 text-xs md:text-sm">{{ currentPage }}</span>
+                        <span class="text-xs md:text-sm text-gray-600">dari {{ totalPages }}</span>
                     </div>
 
                     <!-- Tombol Next -->
@@ -195,20 +204,21 @@
                         size="sm"
                         :disabled="currentPage >= totalPages"
                         @click="currentPage++"
+                        class="!px-2 md:!px-3 !py-1 text-xs"
                     >
-                        Selanjutnya
+                        <span class="hidden xs:inline">Selanjutnya</span>
                         <template #icon>➡️</template>
                     </BaseButton>
                 </div>
             </div>
 
             <!-- Page numbers (optional) -->
-            <div v-if="totalPages > 1" class="flex justify-center gap-1 mt-3">
+            <div v-if="totalPages > 1" class="flex justify-center gap-1 mt-2 md:mt-3">
                 <button
                     v-for="page in visiblePages"
                     :key="page"
                     @click="currentPage = page"
-                    class="w-8 h-8 rounded-lg text-sm transition-all duration-200"
+                    class="w-6 h-6 md:w-8 md:h-8 rounded text-xs md:text-sm transition-all duration-200"
                     :class="page === currentPage 
                         ? 'bg-gradient-to-r from-pink-500 to-sky-500 text-white font-bold' 
                         : 'bg-white text-gray-600 hover:bg-pink-50 border border-gray-200'"
@@ -216,11 +226,38 @@
                     {{ page }}
                 </button>
                 
-                <span v-if="showEllipsis" class="px-2 text-gray-400">...</span>
+                <span v-if="showEllipsis" class="px-1 md:px-2 text-gray-400 text-xs md:text-sm">...</span>
             </div>
         </div>
     </div>
 </template>
+
+
+<style scoped>
+/* Breakpoint untuk screen sangat kecil */
+@media (max-width: 475px) {
+    .xs\:inline {
+        display: inline !important;
+    }
+    
+    .xs\:hidden {
+        display: none !important;
+    }
+}
+
+/* Improve scrolling on mobile */
+@media (max-width: 768px) {
+    .overflow-x-auto {
+        -webkit-overflow-scrolling: touch;
+        scrollbar-width: none;
+        -ms-overflow-style: none;
+    }
+    
+    .overflow-x-auto::-webkit-scrollbar {
+        display: none;
+    }
+}
+</style>
 
 <script setup>
 import { ref, computed, watch } from 'vue';

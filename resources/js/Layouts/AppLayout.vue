@@ -7,6 +7,18 @@ defineProps({
   title: String,
 })
 
+const isMobile = ref(false)
+
+onMounted(() => {
+  // Check if mobile
+  const checkMobile = () => {
+    isMobile.value = window.innerWidth < 768
+  }
+  
+  checkMobile()
+  window.addEventListener('resize', checkMobile)
+})
+
 // Register service worker
 onMounted(() => {
   if ('serviceWorker' in navigator) {
@@ -163,14 +175,14 @@ const menuItems = [
 
     <!-- 🌸 Navbar Atas -->
     <nav
-      class="fixed top-0 left-0 right-0 backdrop-blur-md shadow-md z-50 flex items-center justify-between px-6 h-16 transition-all"
+      class="fixed top-0 left-0 right-0 backdrop-blur-md shadow-md z-50 flex items-center justify-between px-3 sm:px-4 h-12 md:h-16 transition-all"
       :class="themeClasses.navbar"
     >
       <!-- Logo -->
       <div class="flex items-center gap-2">
-        <span class="text-2xl">💞</span>
+        <span class="text-lg md:text-2xl">💞</span>
         <h1
-          class="text-2xl font-bold text-transparent bg-clip-text select-none tracking-wide"
+          class="text-base md:text-2xl font-bold text-transparent bg-clip-text select-none tracking-wide"
           :class="themeClasses.logoGradient"
         >
          {{ user.family?.name ?? 'ALMIR' }}
@@ -183,7 +195,7 @@ const menuItems = [
           v-for="menu in menuItems"
           :key="menu.name"
           :href="menu.href"
-          class="relative font-semibold transition-all px-3 py-2 rounded-lg"
+          class="relative font-semibold transition-all px-3 py-2 rounded-lg text-sm"
           :class="getDesktopMenuClass(menu.href)"
         >
           {{ menu.name }}
@@ -204,10 +216,10 @@ const menuItems = [
           <img
             :src="user.profile_photo_url"
             alt="User"
-            class="w-10 h-10 rounded-full border-2 border-pink-400 object-cover"
+            class="w-8 h-8 md:w-10 md:h-10 rounded-full border-2 border-pink-400 object-cover"
           />
           <span 
-            class="font-semibold"
+            class="font-semibold text-sm md:text-base"
             :class="userTheme && userTheme.navbar ? 'text-transparent bg-clip-text ' + themeClasses.nameGradient : themeClasses.nameGradient"
           >
             {{ user.name }}
@@ -220,7 +232,7 @@ const menuItems = [
         >
           <Link
             href="/user/profile"
-            class="block px-4 py-2 text-gray-700 hover:bg-pink-50 transition flex items-center gap-2"
+            class="block px-4 py-2 text-gray-700 hover:bg-pink-50 transition flex items-center gap-2 text-sm"
             @click="showingDropdown = false"
           >
             <span class="text-lg">👤</span>
@@ -230,7 +242,7 @@ const menuItems = [
             href="/logout"
             method="post"
             as="button"
-            class="block w-full text-left px-4 py-2 text-gray-700 hover:bg-pink-50 transition flex items-center gap-2"
+            class="block w-full text-left px-4 py-2 text-gray-700 hover:bg-pink-50 transition flex items-center gap-2 text-sm"
           >
             <span class="text-lg">🚪</span>
             Logout
@@ -241,21 +253,22 @@ const menuItems = [
       <!-- 🌼 Mobile Navbar (atas kanan hanya nama user) -->
       <div class="md:hidden flex justify-end w-full">
         <span 
-          class="font-bold text-lg truncate max-w-[120px] text-right"
+          class="font-bold text-xs truncate max-w-[80px] text-right"
           :class="userTheme && userTheme.navbar ? 'text-transparent bg-clip-text ' + themeClasses.nameGradient : 'text-pink-600'"
         >
           {{ user.name }}
         </span>
       </div>
+
     </nav>
 
     <!-- 🌟 FLASH MESSAGE - DIBAWAH NAVBAR -->
     <div 
       v-if="flashMessage" 
-      class="fixed top-16 left-1/2 transform -translate-x-1/2 z-40 mt-4 mx-4 max-w-md w-full transition-all duration-300 animate-fadeIn"
+      class="fixed top-12 md:top-16 left-1/2 transform -translate-x-1/2 z-40 mt-2 md:mt-4 mx-2 md:mx-4 max-w-[90vw] md:max-w-md w-full transition-all duration-300 animate-fadeIn"
     >
       <div 
-        class="p-4 rounded-2xl border backdrop-blur-sm shadow-lg"
+        class="p-2 md:p-4 rounded-xl md:rounded-2xl border backdrop-blur-sm shadow-lg text-xs md:text-base"
         :class="{
           'bg-green-50 border-green-200 text-green-800': flashMessage.type === 'success',
           'bg-red-50 border-red-200 text-red-800': flashMessage.type === 'error',
@@ -263,15 +276,15 @@ const menuItems = [
         }"
       >
         <div class="flex items-center justify-between">
-          <div class="flex items-center gap-3">
-            <span class="text-xl">
+          <div class="flex items-center gap-2 md:gap-3">
+            <span class="text-base md:text-xl">
               {{ flashMessage.type === 'success' ? '✅' : flashMessage.type === 'error' ? '⚠️' : 'ℹ️' }}
             </span>
             <span class="font-medium">{{ flashMessage.message }}</span>
           </div>
           <button 
             @click="closeFlashMessage"
-            class="text-gray-500 hover:text-gray-700 transition-colors flex-shrink-0 ml-2"
+            class="text-gray-500 hover:text-gray-700 transition-colors flex-shrink-0 ml-2 text-base"
           >
             ✕
           </button>
@@ -279,42 +292,42 @@ const menuItems = [
       </div>
     </div>
 
-    <!-- 🌈 Mobile Bottom Menu dengan lekukan -->
-    <nav class="md:hidden fixed bottom-0 left-0 right-0 z-50 mb-[-4px]">
-      <!-- Background melengkung -->
+    <!-- 🌈 Mobile Bottom Menu dengan lekukan - TINGGI DISESUAIKAN, FOTO BESAR -->
+    <nav class="md:hidden fixed bottom-0 left-0 right-0 z-50">
+      <!-- Background melengkung - TINGGI DIKURANGI -->
       <div class="relative">
         <svg
-          class="absolute bottom-0 left-0 w-full h-16 drop-shadow-md"
-          viewBox="0 0 1440 320"
+          class="absolute bottom-0 left-0 w-full h-20 drop-shadow-md"
+          viewBox="0 0 1440 120"
           xmlns="http://www.w3.org/2000/svg"
         >
           <path
             :class="themeClasses.mobileMenu.background"
-            d="M0,288 L480,288 C560,288 640,160 720,160 C800,160 880,288 960,288 L1440,288 L1440,320 L0,320 Z"
+            d="M0,80 L480,80 C560,80 640,40 720,40 C800,40 880,80 960,80 L1440,80 L1440,120 L0,120 Z"
           ></path>
         </svg>
 
-        <!-- Menu bawah -->
+        <!-- Menu bawah - PADDING DIKURANGI -->
         <div
-          class="absolute bottom-0 left-0 right-0 backdrop-blur-md border-t shadow-lg flex justify-around items-end py-3 rounded-t-3xl"
+          class="absolute bottom-0 left-0 right-0 backdrop-blur-md border-t shadow-lg flex justify-around items-end py-2 rounded-t-2xl"
           :class="[themeClasses.mobileMenu.background, themeClasses.mobileMenu.border]"
         >
           <!-- Home -->
           <Link
             href="/dashboard"
-            class="flex flex-col items-center text-xs font-medium transition-all pb-2"
+            class="flex flex-col items-center text-[10px] font-medium transition-all pb-1"
             :class="getMobileMenuClass('/dashboard')"
           >
             <div 
-              class="text-2xl transition-transform" 
+              class="text-xl transition-transform" 
               :class="url.startsWith('/dashboard') ? 'scale-110' : ''"
             >
               🏠
             </div>
-            <span>Home</span>
+            <span class="mt-1">Home</span>
           </Link>
 
-          <!-- Foto di Tengah -->
+          <!-- Foto di Tengah - TETAP BESAR SEPERTI SEMULA -->
           <Link
             href="/user/profile"
             class="relative -mt-10 bg-white rounded-full p-1 border-4 border-white shadow-md hover:scale-110 transition-transform"
@@ -329,27 +342,27 @@ const menuItems = [
           <!-- Rencana -->
           <Link
             href="/transactions"
-            class="flex flex-col items-center text-xs font-medium transition-all pb-2"
+            class="flex flex-col items-center text-[10px] font-medium transition-all pb-1"
             :class="getMobileMenuClass('/transactions')"
           >
             <div 
-              class="text-2xl transition-transform" 
+              class="text-xl transition-transform" 
               :class="url.startsWith('/transactions') ? 'scale-110' : ''"
             >
               📝
             </div>
-            <span>Transaksi</span>
+            <span class="mt-1">Transaksi</span>
           </Link>
         </div>
       </div>
     </nav>
 
     <!-- 🌺 Konten Halaman -->
-    <main class="flex-grow pt-20 pb-24 md:pb-6 transition-all duration-300 relative z-10">
+    <main class="flex-grow pt-12 md:pt-16 pb-20 md:pb-6 transition-all duration-300 relative z-10">
       <slot />
     </main>
 
-     <!-- PWA Install Prompt -->
+    <!-- PWA Install Prompt -->
     <PWAInstallPrompt />
   </div>
 </template>
@@ -396,6 +409,25 @@ const menuItems = [
   50% { transform: translateY(-15px) scale(0.9); }
 }
 
+/* Utility classes untuk mobile */
+@media (max-width: 768px) {
+  .min-h-screen {
+    font-size: 14px;
+  }
+}
+
+/* Perbaikan untuk floating hearts di mobile */
+@media (max-width: 640px) {
+  .animate-bounce-slow,
+  .animate-bounce-slow2,
+  .animate-bounce-slow3,
+  .animate-bounce-slow4,
+  .animate-bounce-slow5,
+  .animate-bounce-slow6 {
+    animation-duration: 10s;
+  }
+}
+
 .animate-bounce-slow {
   animation: bounce-slow 8s infinite ease-in-out;
 }
@@ -425,5 +457,18 @@ const menuItems = [
   transition-property: color, background-color, border-color, text-decoration-color, fill, stroke;
   transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
   transition-duration: 300ms;
+}
+
+/* Improve scrolling on mobile */
+@media (max-width: 640px) {
+  .overflow-x-auto {
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+  
+  .overflow-x-auto::-webkit-scrollbar {
+    display: none;
+  }
 }
 </style>

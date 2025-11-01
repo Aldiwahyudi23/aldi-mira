@@ -43,8 +43,8 @@ export default defineConfig({
                 globPatterns: ['**/*.{js,css,html,ico,png,svg}']
             },
             manifest: {
-                 name: 'ALMIR',
-                short_name: 'ALMIR',
+                 name: 'Aldi Mira',
+                short_name: 'Aldi Mira',
                 description: 'Budget bersama',
                 theme_color: THEME_COLOR, // Gunakan variabel yang sama
                 background_color: BACKGROUND_COLOR,

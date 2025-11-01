@@ -1,6 +1,6 @@
 {
-  "name": "ALMIR",
-  "short_name": "ALMIR",
+  "name": "Aldi Mira",
+  "short_name": "Aldi Mira",
   "description": "Budgeting rencana bersama",
   "start_url": "/dashboard",
   "display": "standalone",

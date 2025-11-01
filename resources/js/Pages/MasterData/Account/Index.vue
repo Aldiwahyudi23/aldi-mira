@@ -309,35 +309,39 @@ onMounted(() => {
 <template>
     <AppLayout title="Kelola Akun">
         <template #header>
-            <div class="flex items-center justify-between">
-                <h2 class="font-semibold text-2xl text-gray-800 leading-tight flex items-center gap-2">
-                    🏦 Kelola Akun Keuangan {{ displayNames }}
+            <div class="flex flex-col md:flex-row md:items-center justify-between gap-2 md:gap-0">
+                <h2 class="font-semibold text-xl md:text-2xl text-gray-800 leading-tight flex items-center gap-2">
+                    🏦 Kelola Akun {{ displayNames }}
                 </h2>
-                <span class="text-sm text-gray-500 italic">Atur akun untuk mengelola keuangan bersama 💞</span>
+                <span class="text-xs md:text-sm text-gray-500 italic text-center md:text-right">
+                    Atur akun untuk mengelola keuangan bersama 💞
+                </span>
             </div>
         </template>
 
         <div class="py-2 min-h-screen relative overflow-hidden">
-            <div class="w-full px-4 sm:px-6 lg:px-8 relative z-10">
+            <!-- PERBAIKAN: Padding lebih kecil untuk mobile -->
+            <div class="w-full px-3 sm:px-4 lg:px-6 relative z-10">
+
                 <!-- Flash Message -->
                 <div 
                     v-if="flashMessage" 
-                    class="mb-6 p-4 rounded-2xl border backdrop-blur-sm transition-all duration-300"
+                    class="mb-4 md:mb-6 p-3 md:p-4 rounded-xl md:rounded-2xl border backdrop-blur-sm transition-all duration-300"
                     :class="{
                         'bg-green-50 border-green-200 text-green-800': flashMessage.type === 'success',
                         'bg-red-50 border-red-200 text-red-800': flashMessage.type === 'error'
                     }"
                 >
                     <div class="flex items-center justify-between">
-                        <div class="flex items-center gap-3">
-                            <span class="text-xl">
+                        <div class="flex items-center gap-2 md:gap-3">
+                            <span class="text-lg md:text-xl">
                                 {{ flashMessage.type === 'success' ? '✅' : '⚠️' }}
                             </span>
-                            <span class="font-medium">{{ flashMessage.message }}</span>
+                            <span class="font-medium text-sm md:text-base">{{ flashMessage.message }}</span>
                         </div>
                         <button 
                             @click="flashMessage = null"
-                            class="text-gray-500 hover:text-gray-700 transition-colors"
+                            class="text-gray-500 hover:text-gray-700 transition-colors text-lg"
                         >
                             ✕
                         </button>
@@ -346,10 +350,10 @@ onMounted(() => {
 
                 <!-- Hero Section -->
                 <div class="text-center mb-4">
-                    <h1 class="text-3xl md:text-4xl font-extrabold text-rose-600 drop-shadow-md mb-3">
+                    <h1 class="text-xl md:text-2xl lg:text-3xl font-extrabold text-rose-600 drop-shadow-md mb-2 md:mb-3">
                         Kelola Akun Keuangan
                     </h1>
-                    <p class="text-gray-600 text-lg max-w-2xl mx-auto">
+                    <p class="text-gray-600 text-xs md:text-sm leading-relaxed px-2">
                         Kelola semua akun keuangan 
                         <span class="text-blue-500 font-semibold">personal</span> dan 
                         <span class="text-green-500 font-semibold">joint</span> 
@@ -358,60 +362,60 @@ onMounted(() => {
                 </div>
 
                 <!-- Stats Cards - Responsive grid -->
-                <div class="grid grid-cols-2 lg:grid-cols-4 gap-2 mb-4">
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-2 md:gap-3 mb-4">
                     <!-- Total Balance -->
-                    <BaseCard class="text-center hover:scale-[1.02] transition transform border border-rose-100">
-                        <div class="p-4">
-                            <div class="w-12 h-12 bg-gradient-to-r from-rose-400 to-pink-500 rounded-xl flex items-center justify-center mx-auto mb-3 shadow-md">
-                                <span class="text-xl text-white">💰</span>
+                    <div class="bg-white/90 backdrop-blur-md shadow-lg rounded-xl md:rounded-2xl p-3 md:p-4 hover:scale-[1.02] transition transform border border-rose-100">
+                        <div class="text-center">
+                            <div class="w-10 h-10 md:w-12 md:h-12 bg-gradient-to-r from-rose-400 to-pink-500 rounded-lg md:rounded-xl flex items-center justify-center mx-auto mb-2 md:mb-3 shadow-md">
+                                <span class="text-lg md:text-xl text-white">💰</span>
                             </div>
-                            <h3 class="text-xl font-bold text-gray-800 mb-1">
+                            <h3 class="text-base md:text-lg lg:text-xl font-bold text-gray-800 mb-1">
                                 {{ formatCurrency(totalBalance) }}
                             </h3>
-                            <p class="text-sm text-gray-600">Total Saldo</p>
+                            <p class="text-xs md:text-sm text-gray-600">Total Saldo</p>
                         </div>
-                    </BaseCard>
+                    </div>
 
                     <!-- Personal Accounts -->
-                    <BaseCard class="text-center hover:scale-[1.02] transition transform border border-blue-100">
-                        <div class="p-4">
-                            <div class="w-12 h-12 bg-gradient-to-r from-blue-400 to-cyan-500 rounded-xl flex items-center justify-center mx-auto mb-3 shadow-md">
-                                <span class="text-xl text-white">👤</span>
+                    <div class="bg-white/90 backdrop-blur-md shadow-lg rounded-xl md:rounded-2xl p-3 md:p-4 hover:scale-[1.02] transition transform border border-blue-100">
+                        <div class="text-center">
+                            <div class="w-10 h-10 md:w-12 md:h-12 bg-gradient-to-r from-blue-400 to-cyan-500 rounded-lg md:rounded-xl flex items-center justify-center mx-auto mb-2 md:mb-3 shadow-md">
+                                <span class="text-lg md:text-xl text-white">👤</span>
                             </div>
-                            <h3 class="text-xl font-bold text-gray-800 mb-1">
+                            <h3 class="text-base md:text-lg lg:text-xl font-bold text-gray-800 mb-1">
                                 {{ personalAccounts.length }}
                             </h3>
-                            <p class="text-sm text-gray-600">Personal</p>
+                            <p class="text-xs md:text-sm text-gray-600">Personal</p>
                             <p class="text-xs text-gray-500 mt-1">{{ formatCurrency(personalBalance) }}</p>
                         </div>
-                    </BaseCard>
+                    </div>
 
                     <!-- Joint Accounts -->
-                    <BaseCard class="text-center hover:scale-[1.02] transition transform border border-green-100">
-                        <div class="p-4">
-                            <div class="w-12 h-12 bg-gradient-to-r from-green-400 to-emerald-500 rounded-xl flex items-center justify-center mx-auto mb-3 shadow-md">
-                                <span class="text-xl text-white">👥</span>
+                    <div class="bg-white/90 backdrop-blur-md shadow-lg rounded-xl md:rounded-2xl p-3 md:p-4 hover:scale-[1.02] transition transform border border-green-100">
+                        <div class="text-center">
+                            <div class="w-10 h-10 md:w-12 md:h-12 bg-gradient-to-r from-green-400 to-emerald-500 rounded-lg md:rounded-xl flex items-center justify-center mx-auto mb-2 md:mb-3 shadow-md">
+                                <span class="text-lg md:text-xl text-white">👥</span>
                             </div>
-                            <h3 class="text-xl font-bold text-gray-800 mb-1">
+                            <h3 class="text-base md:text-lg lg:text-xl font-bold text-gray-800 mb-1">
                                 {{ jointAccounts.length }}
                             </h3>
-                            <p class="text-sm text-gray-600">Joint</p>
+                            <p class="text-xs md:text-sm text-gray-600">Joint</p>
                             <p class="text-xs text-gray-500 mt-1">{{ formatCurrency(jointBalance) }}</p>
                         </div>
-                    </BaseCard>
+                    </div>
 
                     <!-- My Accounts -->
-                    <BaseCard class="text-center hover:scale-[1.02] transition transform border border-purple-100">
-                        <div class="p-4">
-                            <div class="w-12 h-12 bg-gradient-to-r from-purple-400 to-pink-500 rounded-xl flex items-center justify-center mx-auto mb-3 shadow-md">
-                                <span class="text-xl text-white">📊</span>
+                    <div class="bg-white/90 backdrop-blur-md shadow-lg rounded-xl md:rounded-2xl p-3 md:p-4 hover:scale-[1.02] transition transform border border-purple-100">
+                        <div class="text-center">
+                            <div class="w-10 h-10 md:w-12 md:h-12 bg-gradient-to-r from-purple-400 to-pink-500 rounded-lg md:rounded-xl flex items-center justify-center mx-auto mb-2 md:mb-3 shadow-md">
+                                <span class="text-lg md:text-xl text-white">📊</span>
                             </div>
-                            <h3 class="text-xl font-bold text-gray-800 mb-1">
+                            <h3 class="text-base md:text-lg lg:text-xl font-bold text-gray-800 mb-1">
                                 {{ myAccounts.length }}
                             </h3>
-                            <p class="text-sm text-gray-600">Akun Saya</p>
+                            <p class="text-xs md:text-sm text-gray-600">Akun Saya</p>
                         </div>
-                    </BaseCard>
+                    </div>
                 </div>
 
                 <!-- Main Table -->
@@ -431,18 +435,18 @@ onMounted(() => {
                     <!-- Custom column for type with icon -->
                     <template #column-type="{ item }">
                         <div class="flex items-center gap-2">
-                            <span class="text-lg">{{ formatTypeIcon(item.type) }}</span>
-                            <span class="font-medium text-gray-700 text-sm">{{ formatTypeBadge(item.type) }}</span>
+                            <span class="text-base md:text-lg">{{ formatTypeIcon(item.type) }}</span>
+                            <span class="font-medium text-gray-700 text-xs md:text-sm">{{ formatTypeBadge(item.type) }}</span>
                         </div>
                     </template>
 
                     <!-- Custom column for balance -->
                     <template #column-current_balance="{ item }">
                         <div class="flex items-center gap-2">
-                            <span class="text-lg" :class="item.current_balance >= 0 ? 'text-green-600' : 'text-red-600'">
+                            <span class="text-base md:text-lg" :class="item.current_balance >= 0 ? 'text-green-600' : 'text-red-600'">
                                 {{ item.current_balance >= 0 ? '💰' : '💸' }}
                             </span>
-                            <span class="font-bold text-gray-800 text-sm" :class="item.current_balance >= 0 ? 'text-green-700' : 'text-red-700'">
+                            <span class="font-bold text-gray-800 text-xs md:text-sm" :class="item.current_balance >= 0 ? 'text-green-700' : 'text-red-700'">
                                 {{ formatCurrency(item.current_balance) }}
                             </span>
                         </div>
@@ -451,8 +455,8 @@ onMounted(() => {
                     <!-- Custom column for created by -->
                     <template #column-user.name="{ item }">
                         <div class="flex items-center gap-2">
-                            <span class="text-lg">{{ item.user_id === user.id ? '👤' : '👥' }}</span>
-                            <span class="font-medium text-gray-700 text-sm" :class="item.user_id === user.id ? 'text-blue-600' : 'text-green-600'">
+                            <span class="text-base md:text-lg">{{ item.user_id === user.id ? '👤' : '👥' }}</span>
+                            <span class="font-medium text-gray-700 text-xs md:text-sm" :class="item.user_id === user.id ? 'text-blue-600' : 'text-green-600'">
                                 {{ item.user_id === user.id ? 'Saya' : (item.user?.name || 'Partner') }}
                             </span>
                         </div>
@@ -461,60 +465,60 @@ onMounted(() => {
                     <!-- Custom column for date -->
                     <template #column-created_at="{ item }">
                         <div class="flex items-center gap-2">
-                            <span class="text-lg">📅</span>
-                            <span class="font-medium text-gray-700 text-sm">{{ formatDate(item.created_at) }}</span>
+                            <span class="text-base md:text-lg">📅</span>
+                            <span class="font-medium text-gray-700 text-xs md:text-sm">{{ formatDate(item.created_at) }}</span>
                         </div>
                     </template>
 
                     <!-- Custom actions slot -->
                     <template #actions="{ item }">
-                        <BaseButton
-                            @click="openBalanceModal(item)"
-                            variant="primary"
-                            size="sm"
-                            class="!px-2 !py-2"
-                            :disabled="!canEditAccount(item)"
-                            :title="!canEditAccount(item) ? 'Hanya dapat mengubah saldo akun yang Anda buat' : 'Update saldo'"
-                        >
-                            <template #icon>💰</template>
-                            Saldo
-                        </BaseButton>
-                        <BaseButton
-                            @click="openEditModal(item)"
-                            variant="secondary"
-                            size="sm"
-                            class="!px-2 !py-2"
-                            :disabled="!canEditAccount(item)"
-                            :title="!canEditAccount(item) ? 'Hanya dapat mengedit akun yang Anda buat' : 'Edit akun'"
-                        >
-                            <template #icon>✏️</template>
-                            Edit
-                        </BaseButton>
-                        <BaseButton
-                            @click="openDeleteModal(item)"
-                            variant="danger"
-                            size="sm"
-                            class="!px-2 !py-2"
-                            :disabled="!canEditAccount(item)"
-                            :title="!canEditAccount(item) ? 'Hanya dapat menghapus akun yang Anda buat' : 'Hapus akun'"
-                        >
-                            <template #icon>🗑️</template>
-                            Hapus
-                        </BaseButton>
+                            <BaseButton
+                                @click="openBalanceModal(item)"
+                                variant="primary"
+                                size="sm"
+                                class="!px-2 !py-1 text-xs"
+                                :disabled="!canEditAccount(item)"
+                                :title="!canEditAccount(item) ? 'Hanya dapat mengubah saldo akun yang Anda buat' : 'Update saldo'"
+                            >
+                                <template #icon>💰</template>
+                                <span class="hidden xs:inline">Saldo</span>
+                            </BaseButton>
+                            <BaseButton
+                                @click="openEditModal(item)"
+                                variant="secondary"
+                                size="sm"
+                                class="!px-2 !py-1 text-xs"
+                                :disabled="!canEditAccount(item)"
+                                :title="!canEditAccount(item) ? 'Hanya dapat mengedit akun yang Anda buat' : 'Edit akun'"
+                            >
+                                <template #icon>✏️</template>
+                                <span class="hidden xs:inline">Edit</span>
+                            </BaseButton>
+                            <BaseButton
+                                @click="openDeleteModal(item)"
+                                variant="danger"
+                                size="sm"
+                                class="!px-2 !py-1 text-xs"
+                                :disabled="!canEditAccount(item)"
+                                :title="!canEditAccount(item) ? 'Hanya dapat menghapus akun yang Anda buat' : 'Hapus akun'"
+                            >
+                                <template #icon>🗑️</template>
+                                <span class="hidden xs:inline">Hapus</span>
+                            </BaseButton>
                     </template>
                 </BaseTable>
 
                 <!-- Empty State CTA -->
                 <div v-if="accounts.length === 0 && !loading" class="text-center mt-6">
-                    <div class="bg-white/80 backdrop-blur-md rounded-3xl shadow-lg p-8 border border-gray-100">
-                        <div class="text-6xl mb-4">🏦</div>
-                        <h3 class="text-xl font-bold text-gray-800 mb-2">Belum ada akun</h3>
-                        <p class="text-gray-600 mb-6 max-w-md mx-auto">
+                    <div class="bg-white/80 backdrop-blur-md rounded-xl md:rounded-2xl shadow-lg p-6 md:p-8 border border-gray-100">
+                        <div class="text-4xl md:text-6xl mb-4">🏦</div>
+                        <h3 class="text-lg md:text-xl font-bold text-gray-800 mb-2">Belum ada akun</h3>
+                        <p class="text-gray-600 mb-6 text-sm md:text-base max-w-md mx-auto">
                             Mulai dengan membuat akun pertama untuk mengelola keuangan {{ displayNames }}
                         </p>
                         <BaseButton
                             @click="openCreateModal"
-                            class="px-6 py-3"
+                            class="px-4 py-2 md:px-6 md:py-3 text-sm md:text-base"
                         >
                             <template #icon>➕</template>
                             Buat Akun Pertama
@@ -536,7 +540,7 @@ onMounted(() => {
                     @close="closeModal"
                     size="lg"
                 >
-                    <div class="space-y-3 max-h-[60vh] overflow-y-auto pr-2">
+                    <div class="space-y-3 max-h-[50vh] md:max-h-[60vh] overflow-y-auto pr-2">
                         <TextInput
                             v-model="form.name"
                             label="Nama Akun"
@@ -559,7 +563,7 @@ onMounted(() => {
                         />
 
                         <AccountInput
-                         v-if="!editingAccount"
+                            v-if="!editingAccount"
                             v-model="form.current_balance"
                             label="Saldo Awal"
                             placeholder="Masukkan saldo awal"
@@ -571,9 +575,9 @@ onMounted(() => {
                         />
 
                         <!-- Info Box -->
-                        <div class="p-4 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-2xl border border-blue-200">
-                            <p class="text-sm text-gray-700 flex items-start gap-2">
-                                <span class="text-lg mt-0.5">💡</span>
+                        <div class="p-3 md:p-4 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl md:rounded-2xl border border-blue-200">
+                            <p class="text-xs md:text-sm text-gray-700 flex items-start gap-2">
+                                <span class="text-base md:text-lg mt-0.5">💡</span>
                                 <span>
                                     <strong class="block">Informasi:</strong>
                                     • <strong>Personal:</strong> Hanya Anda yang bisa melihat dan mengelola<br>
@@ -583,10 +587,10 @@ onMounted(() => {
                         </div>
 
                         <!-- Error Summary -->
-                        <div v-if="form.hasErrors" class="p-2 bg-gradient-to-r from-red-50 to-pink-50 border border-red-200 rounded-2xl">
-                            <p class="text-sm text-red-600 flex items-center gap-2">
+                        <div v-if="form.hasErrors" class="p-2 bg-gradient-to-r from-red-50 to-pink-50 border border-red-200 rounded-xl md:rounded-2xl">
+                            <p class="text-xs md:text-sm text-red-600 flex items-center gap-2">
                                 <span>⚠️</span>
-                                Terdapat kesalahan dalam pengisian form. Silakan periksa kembali input Anda.
+                                Terdapat kesalahan dalam pengisian form.
                             </p>
                         </div>
                     </div>
@@ -617,12 +621,12 @@ onMounted(() => {
                             :disabled="balanceForm.processing"
                         />
 
-                        <div v-if="accountToUpdateBalance" class="p-4 bg-gradient-to-r from-gray-50 to-blue-50 border border-gray-200 rounded-2xl">
-                            <h4 class="font-semibold text-gray-800 mb-2">Detail Akun:</h4>
-                            <div class="grid grid-cols-2 gap-4 text-sm">
+                        <div v-if="accountToUpdateBalance" class="p-3 md:p-4 bg-gradient-to-r from-gray-50 to-blue-50 border border-gray-200 rounded-xl md:rounded-2xl">
+                            <h4 class="font-semibold text-gray-800 text-sm md:text-base mb-2">Detail Akun:</h4>
+                            <div class="grid grid-cols-1 xs:grid-cols-2 gap-3 md:gap-4 text-xs md:text-sm">
                                 <div>
                                     <span class="text-gray-600">Nama:</span>
-                                    <p class="font-medium text-gray-800">{{ accountToUpdateBalance.name }}</p>
+                                    <p class="font-medium text-gray-800 truncate">{{ accountToUpdateBalance.name }}</p>
                                 </div>
                                 <div>
                                     <span class="text-gray-600">Tipe:</span>
@@ -655,22 +659,22 @@ onMounted(() => {
                     @close="showDeleteModal = false"
                 >
                     <div class="space-y-4">
-                        <div class="p-4 bg-gradient-to-r from-red-50 to-orange-50 border border-red-200 rounded-2xl">
-                            <p class="text-sm text-red-600 flex items-start gap-2">
-                                <span class="text-lg mt-0.5">⚠️</span>
+                        <div class="p-3 md:p-4 bg-gradient-to-r from-red-50 to-orange-50 border border-red-200 rounded-xl md:rounded-2xl">
+                            <p class="text-xs md:text-sm text-red-600 flex items-start gap-2">
+                                <span class="text-base md:text-lg mt-0.5">⚠️</span>
                                 <span>
                                     <strong class="block">Tindakan ini tidak dapat dibatalkan!</strong>
-                                    Semua data transaksi yang terkait dengan akun ini akan terpengaruh. Pastikan tidak ada transaksi yang menggunakan akun ini.
+                                    Semua data transaksi yang terkait dengan akun ini akan terpengaruh.
                                 </span>
                             </p>
                         </div>
 
-                        <div v-if="accountToDelete" class="p-4 bg-gradient-to-r from-gray-50 to-blue-50 border border-gray-200 rounded-2xl">
-                            <h4 class="font-semibold text-gray-800 mb-2">Detail Akun:</h4>
-                            <div class="grid grid-cols-2 gap-4 text-sm">
+                        <div v-if="accountToDelete" class="p-3 md:p-4 bg-gradient-to-r from-gray-50 to-blue-50 border border-gray-200 rounded-xl md:rounded-2xl">
+                            <h4 class="font-semibold text-gray-800 text-sm md:text-base mb-2">Detail Akun:</h4>
+                            <div class="grid grid-cols-1 xs:grid-cols-2 gap-3 md:gap-4 text-xs md:text-sm">
                                 <div>
                                     <span class="text-gray-600">Nama:</span>
-                                    <p class="font-medium text-gray-800">{{ accountToDelete.name }}</p>
+                                    <p class="font-medium text-gray-800 truncate">{{ accountToDelete.name }}</p>
                                 </div>
                                 <div>
                                     <span class="text-gray-600">Tipe:</span>
@@ -684,7 +688,7 @@ onMounted(() => {
                                     <span class="text-gray-600">Dibuat:</span>
                                     <p class="font-medium text-gray-800">{{ formatDate(accountToDelete.created_at) }}</p>
                                 </div>
-                                <div>
+                                <div class="xs:col-span-2">
                                     <span class="text-gray-600">Dibuat Oleh:</span>
                                     <p class="font-medium text-gray-800">{{ accountToDelete.user_id === user.id ? 'Saya' : (accountToDelete.user?.name || 'Partner') }}</p>
                                 </div>
@@ -698,36 +702,65 @@ onMounted(() => {
 </template>
 
 <style scoped>
-@keyframes bounce-slow {
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(12px); }
+/* Utility classes untuk mobile */
+.line-clamp-2 {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
 }
-@keyframes bounce-slow2 {
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-15px); }
+
+/* Improve scrolling on mobile */
+@media (max-width: 640px) {
+    .overflow-x-auto {
+        -webkit-overflow-scrolling: touch;
+        scrollbar-width: none;
+        -ms-overflow-style: none;
+    }
+    
+    .overflow-x-auto::-webkit-scrollbar {
+        display: none;
+    }
 }
-.animate-bounce-slow {
-  animation: bounce-slow 7s infinite ease-in-out;
-}
-.animate-bounce-slow2 {
-  animation: bounce-slow2 9s infinite ease-in-out;
+
+/* Breakpoint untuk screen sangat kecil */
+@media (max-width: 475px) {
+    .xs\:inline {
+        display: inline !important;
+    }
+    
+    .xs\:hidden {
+        display: none !important;
+    }
+    
+    .xs\:col-span-2 {
+        grid-column: span 2 / span 2;
+    }
+    
+    .xs\:grid-cols-2 {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
 }
 
 /* Custom scrollbar untuk modal */
+.max-h-\[50vh\]::-webkit-scrollbar,
 .max-h-\[60vh\]::-webkit-scrollbar {
-    width: 6px;
+    width: 4px;
 }
 
+.max-h-\[50vh\]::-webkit-scrollbar-track,
 .max-h-\[60vh\]::-webkit-scrollbar-track {
     background: rgba(255, 255, 255, 0.1);
-    border-radius: 10px;
+    border-radius: 8px;
 }
 
+.max-h-\[50vh\]::-webkit-scrollbar-thumb,
 .max-h-\[60vh\]::-webkit-scrollbar-thumb {
     background: linear-gradient(to bottom, #f472b6, #60a5fa);
-    border-radius: 10px;
+    border-radius: 8px;
 }
 
+.max-h-\[50vh\]::-webkit-scrollbar-thumb:hover,
 .max-h-\[60vh\]::-webkit-scrollbar-thumb:hover {
     background: linear-gradient(to bottom, #ec4899, #3b82f6);
 }
