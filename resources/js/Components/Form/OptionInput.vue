@@ -1,19 +1,20 @@
 <template>
-    <div class="mb-6">
-        <label v-if="label" class="block text-sm font-semibold text-gray-700 mb-3 flex items-center gap-2">
+    <div class="mb-4 md:mb-6">
+        <label v-if="label" class="block text-sm font-semibold text-gray-700 mb-2 md:mb-3 flex items-center gap-2">
             <span v-if="icon" :class="iconClass">{{ icon }}</span>
             {{ label }}
             <span v-if="required" class="text-red-500">*</span>
         </label>
         
-        <div class="space-y-3">
+        <div class="space-y-2 md:space-y-3">
             <div
                 v-for="option in options"
                 :key="option.value"
-                class="flex items-center p-2 border border-gray-200 rounded-2xl hover:bg-gray-50 transition-all duration-200 cursor-pointer"
+                class="flex items-center p-3 md:p-4 border border-gray-200 rounded-xl md:rounded-2xl hover:bg-gray-50 transition-all duration-200 cursor-pointer bg-white/50 backdrop-blur-sm"
                 :class="{
                     'bg-gradient-to-r from-blue-50 to-indigo-50 border-blue-300': isSelected(option.value),
-                    'border-red-300': error
+                    'border-red-300': error,
+                    'opacity-50 cursor-not-allowed': disabled
                 }"
                 @click="toggleOption(option.value)"
             >
@@ -23,7 +24,7 @@
                     type="checkbox"
                     :checked="isSelected(option.value)"
                     :disabled="disabled"
-                    class="w-4 h-4 text-blue-500 bg-gray-100 border-gray-300 rounded focus:ring-blue-400 focus:ring-2"
+                    class="w-4 h-4 text-blue-500 bg-gray-100 border-gray-300 rounded focus:ring-2 focus:ring-blue-300 focus:ring-offset-1"
                     :class="{
                         'opacity-50 cursor-not-allowed': disabled
                     }"
@@ -31,11 +32,14 @@
                 >
                 <label
                     :for="`${id}-${option.value}`"
-                    class="ml-3 text-sm font-medium text-gray-700 cursor-pointer flex-1 flex items-center gap-2"
+                    class="ml-3 text-sm md:text-base text-gray-700 cursor-pointer flex-1 flex items-center gap-2"
+                    :class="{
+                        'cursor-not-allowed': disabled
+                    }"
                 >
-                    <span v-if="option.icon" class="text-lg">{{ option.icon }}</span>
+                    <span v-if="option.icon" class="text-base md:text-lg">{{ option.icon }}</span>
                     {{ option.label }}
-                    <span v-if="option.description" class="text-xs text-gray-500 ml-2">{{ option.description }}</span>
+                    <span v-if="option.description" class="text-xs md:text-sm text-gray-500 ml-2">{{ option.description }}</span>
                 </label>
                 
                 <div v-if="option.badge" class="px-2 py-1 text-xs rounded-full" :class="option.badgeClass">
@@ -44,12 +48,12 @@
             </div>
         </div>
         
-        <p v-if="error" class="mt-2 text-sm text-red-500 flex items-center gap-2">
+        <p v-if="error" class="mt-1 md:mt-2 text-xs md:text-sm text-red-500 flex items-center gap-1 md:gap-2">
             <span>⚠️</span>
             {{ error }}
         </p>
         
-        <p v-if="help" class="mt-2 text-sm text-gray-500 flex items-center gap-2">
+        <p v-if="help" class="mt-1 md:mt-2 text-xs md:text-sm text-gray-500 flex items-center gap-1 md:gap-2">
             <span>💡</span>
             {{ help }}
         </p>

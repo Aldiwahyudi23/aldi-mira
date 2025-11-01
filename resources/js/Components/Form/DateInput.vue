@@ -1,6 +1,6 @@
 <template>
-  <div class="mb-6 relative">
-    <label v-if="label" :for="id" class="block text-sm font-semibold text-gray-700 mb-3 flex items-center gap-2">
+  <div class="mb-4 md:mb-6 relative">
+    <label v-if="label" :for="id" class="block text-sm font-semibold text-gray-700 mb-2 md:mb-3 flex items-center gap-2">
       <span v-if="icon" :class="iconClass">{{ icon }}</span>
       {{ label }}
       <span v-if="required" class="text-red-500">*</span>
@@ -13,9 +13,9 @@
         type="date"
         :placeholder="placeholder"
         :disabled="disabled"
-        class="w-full border border-gray-200 rounded-2xl p-4 focus:ring-2 focus:ring-blue-300 focus:border-blue-300 transition-all duration-300 bg-white/50 backdrop-blur-sm font-medium"
+        class="w-full border border-gray-200 rounded-xl md:rounded-2xl p-3 md:p-4 focus:ring-2 focus:ring-blue-300 focus:border-blue-300 transition-all duration-300 bg-white/50 backdrop-blur-sm font-medium text-sm md:text-base"
         :class="{
-          'pl-12': icon,
+          'pl-10 md:pl-12': icon,
           'border-red-300': error,
           'opacity-50 cursor-not-allowed': disabled,
           'bg-green-50 border-green-200': isToday,
@@ -25,20 +25,20 @@
         :max="maxDate"
       />
 
-      <div v-if="icon" class="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400">
+      <div v-if="icon" class="absolute left-3 md:left-4 top-1/2 transform -translate-y-1/2 text-gray-400 text-base md:text-lg">
         {{ icon }}
       </div>
     </div>
 
-    <p v-if="error" class="mt-2 text-sm text-red-500 flex items-center gap-2">⚠️ {{ error }}</p>
-    <p v-if="help" class="mt-2 text-sm text-gray-500 flex items-center gap-2">💡 {{ help }}</p>
+    <p v-if="error" class="mt-1 md:mt-2 text-xs md:text-sm text-red-500 flex items-center gap-1 md:gap-2">⚠️ {{ error }}</p>
+    <p v-if="help" class="mt-1 md:mt-2 text-xs md:text-sm text-gray-500 flex items-center gap-1 md:gap-2">💡 {{ help }}</p>
 
-    <div v-if="internalValue && showDateInfo" class="mt-3 p-3 bg-blue-50 rounded-xl border border-blue-200">
-      <p class="text-sm text-blue-700 flex items-center gap-2">
-        <span>📅</span>
+    <div v-if="internalValue && showDateInfo" class="mt-2 md:mt-3 p-2 md:p-3 bg-blue-50 rounded-lg md:rounded-xl border border-blue-200">
+      <p class="text-xs md:text-sm text-blue-700 flex items-center gap-1 md:gap-2">
+        <span class="text-base md:text-lg">📅</span>
         <span>
           <strong>Tanggal terpilih:</strong> {{ formattedSelectedDate }}
-          <span v-if="isToday" class="ml-2 px-2 py-1 bg-green-100 text-green-700 rounded-full text-xs font-medium">Hari Ini</span>
+          <span v-if="isToday" class="ml-1 md:ml-2 px-1.5 md:px-2 py-0.5 md:py-1 bg-green-100 text-green-700 rounded-full text-xs font-medium">Hari Ini</span>
         </span>
       </p>
     </div>

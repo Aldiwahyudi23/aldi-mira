@@ -1,392 +1,3 @@
-<script setup>
-import AppLayout from '@/Layouts/AppLayout.vue'
-import { ref, computed, watch, onMounted  } from 'vue'
-import { Link, router, useForm } from '@inertiajs/vue3'
-import BaseButton from '@/Components/Base/BaseButton.vue'
-import BaseModal from '@/Components/Base/BaseModal.vue'
-import ChecklistManager from '@/Components/Project/ChecklistManager.vue'
-import SelectInput from '@/Components/Form/SelectInput.vue'
-import TextInput from '@/Components/Form/TextInput.vue'
-import TextAreaInput from '@/Components/Form/TextAreaInput.vue'
-import AccountInput from '@/Components/Form/AccountInput.vue'
-import PaymentManager from '@/Components/Project/PaymentManager.vue'
-import axios from 'axios'; // TAMBAHKAN INI JIKA BELUM ADA
-
-const props = defineProps({
-    item: Object,
-    project: Object,
-    canEdit: Boolean
-})
-
-// State
-const showEditModal = ref(false)
-const qty = ref(1)
-const unitPrice = ref(0)
-
-const showCategoryInput = ref(false) // TAMBAHKAN INI
-const availableCategories = ref([]) // TAMBAHKAN INI
-
-// Initialize data
-onMounted(() => {
-    loadCategories(); // LOAD CATEGORIES SAAT KOMPONEN MOUNT
-});
-// Forms
-const form = useForm({
-    item_type: props.item.item_type,
-     item_category: props.item.item_category || '',
-    name: props.item.name,
-    description: props.item.description || '',
-    planned_amount: props.item.planned_amount,
-    actual_spent: props.item.actual_spent,
-    status: props.item.status,
-    details: props.item.details || {},
-});
-
-// Computed untuk kategori
-const hasExistingCategories = computed(() => {
-    return availableCategories.value && availableCategories.value.length > 0;
-});
-
-const shouldShowCategoryInput = computed(() => {
-    return showCategoryInput.value || !hasExistingCategories.value;
-});
-
-const categoryOptions = computed(() => {
-    if (!availableCategories.value || !Array.isArray(availableCategories.value)) {
-        return [];
-    }
-    return availableCategories.value.map(cat => ({ value: cat, label: cat }));
-});
-
-// Load categories dari API
-const loadCategories = async () => {
-    try {
-        console.log('Loading categories for project:', props.project.id);
-        const response = await axios.get(route('projects.items.api.categories', { 
-            project: props.project.id 
-        }));
-        
-        console.log('Categories API response:', response.data);
-        
-        // Handle response yang berbeda-beda
-        if (response.data && response.data.success) {
-            availableCategories.value = response.data.categories || [];
-        } else if (Array.isArray(response.data)) {
-            availableCategories.value = response.data;
-        } else if (response.data && Array.isArray(response.data.categories)) {
-            availableCategories.value = response.data.categories;
-        } else {
-            console.warn('Unexpected categories response format:', response.data);
-            availableCategories.value = [];
-        }
-        
-        console.log('Final available categories:', availableCategories.value);
-        
-    } catch (error) {
-        console.error('Error loading categories:', error);
-        availableCategories.value = [];
-    }
-};
-
-// Computed untuk form
-const isGoodsOrMaterial = computed(() => {
-    return ['goods', 'material'].includes(form.item_type);
-});
-
-const calculatedPlannedAmount = computed(() => {
-    if (!isGoodsOrMaterial.value) return form.planned_amount;
-    
-    const quantity = parseFloat(form.details.quantity) || 0;
-    const unitPrice = parseFloat(form.details.unit_price) || 0;
-    return quantity * unitPrice;
-});
-
-// Computed untuk UI
-const canEditItem = computed(() => {
-    return props.canEdit && props.item.status !== 'complete';
-});
-
-const isItemGoodsOrMaterial = computed(() => {
-    return ['goods', 'material'].includes(props.item.item_type);
-});
-
-const hasGoodsDetails = computed(() => {
-    if (!props.item.details) return false
-    const goodsFields = ['ukuran', 'warna', 'material', 'merk']
-    return goodsFields.some(field => props.item.details[field])
-})
-
-const hasPurchaseDetails = computed(() => {
-    if (!props.item.details) return false;
-    
-    const details = { ...props.item.details };
-    // Hapus quantity dan unit_price dari pengecekan
-    delete details.quantity;
-    delete details.unit_price;
-    
-    return Object.keys(details).length > 0;
-});
-
-// Item type options
-const itemTypeOptions = [
-    { value: 'goods', label: '🛍️ Barang' },
-    { value: 'service', label: '👨‍💼 Jasa' },
-    { value: 'document', label: '📄 Dokumen' },
-    { value: 'task', label: '✅ Tugas' },
-    { value: 'material', label: '🏗️ Material' },
-];
-
-// Status options
-const statusOptions = [
-    { value: 'needed', label: '⏳ Diperlukan' },
-    { value: 'in_progress', label: '🚧 Dalam Proses' },
-    { value: 'ready', label: '📦 Siap' },
-    { value: 'complete', label: '✅ Selesai' },
-    { value: 'cancelled', label: '❌ Dibatalkan' },
-];
-
-// Purchase type options untuk barang
-const purchaseTypeOptions = [
-    { value: 'online', label: '🛒 Beli Online' },
-    { value: 'store', label: '🏪 Beli di Toko' },
-];
-
-// E-commerce platforms
-const ecommercePlatforms = {
-    'shopee': { name: 'Shopee', icon: '🟠', color: 'text-orange-500' },
-    'tokopedia': { name: 'Tokopedia', icon: '🟢', color: 'text-green-500' },
-    'lazada': { name: 'Lazada', icon: '🔵', color: 'text-blue-500' },
-    'blibli': { name: 'Blibli', icon: '🔴', color: 'text-red-500' },
-    'bukalapak': { name: 'Bukalapak', icon: '🟡', color: 'text-yellow-500' },
-    'other': { name: 'Lainnya', icon: '🛒', color: 'text-gray-500' }
-}
-
-// Dynamic detail fields berdasarkan item type
-const detailFields = computed(() => {
-    const baseFields = {
-        goods: [
-            // Purchase Type Radio
-            { 
-                key: 'purchase_type', 
-                label: 'Cara Pembelian', 
-                type: 'radio', 
-                icon: '🛒',
-                options: purchaseTypeOptions
-            },
-            // Online fields
-            ...(form.details?.purchase_type === 'online' ? [
-                { 
-                    key: 'ecommerce_platform', 
-                    label: 'Platform Online', 
-                    type: 'select', 
-                    icon: '📱',
-                    options: Object.entries(ecommercePlatforms).map(([value, data]) => ({
-                        value,
-                        label: `${data.icon} ${data.name}`
-                    }))
-                },
-                { 
-                    key: 'online_link', 
-                    label: 'Link Produk', 
-                    type: 'url', 
-                    icon: '🔗',
-                    placeholder: 'https://...'
-                }
-            ] : []),
-            // Store fields
-            ...(form.details?.purchase_type === 'store' ? [
-                { 
-                    key: 'store_maps', 
-                    label: 'Link Google Maps', 
-                    type: 'url', 
-                    icon: '🗺️',
-                    placeholder: 'https://maps.google.com/...'
-                },
-                { 
-                    key: 'store_address', 
-                    label: 'Alamat Toko', 
-                    type: 'textarea', 
-                    icon: '🏪',
-                    placeholder: 'Alamat lengkap toko...'
-                }
-            ] : []),
-            // Common goods fields
-            { key: 'ukuran', label: 'Ukuran', type: 'text', icon: '📏' },
-            { key: 'warna', label: 'Warna', type: 'text', icon: '🎨' },
-            { key: 'material', label: 'Material', type: 'text', icon: '⚙️' },
-            { key: 'merk', label: 'Merk', type: 'text', icon: '🏷️' },
-        ],
-        service: [
-            { key: 'vendor_kontak', label: 'Kontak Vendor', type: 'text', icon: '📞' },
-            { key: 'tanggal_kontrak', label: 'Tanggal Kontrak', type: 'date', icon: '📅' },
-            { key: 'sisa_pembayaran', label: 'Sisa Pembayaran', type: 'number', icon: '💰' },
-            { key: 'menu_pilihan', label: 'Menu Pilihan', type: 'text', icon: '🍽️' },
-            { key: 'lokasi', label: 'Lokasi', type: 'text', icon: '📍' },
-        ],
-        document: [
-            { key: 'tanggal_kadaluarsa', label: 'Tanggal Kadaluarsa', type: 'date', icon: '📅' },
-            { key: 'lokasi_fisik', label: 'Lokasi Fisik', type: 'text', icon: '📁' },
-            { key: 'status_legalitas', label: 'Status Legalitas', type: 'text', icon: '⚖️' },
-            { key: 'nomor_dokumen', label: 'Nomor Dokumen', type: 'text', icon: '🔢' },
-        ],
-        task: [
-            { key: 'pihak_pengurus', label: 'Pihak Pengurus', type: 'text', icon: '👤' },
-            { key: 'biaya_administrasi', label: 'Biaya Administrasi', type: 'number', icon: '💰' },
-            { key: 'progress_persentase', label: 'Progress (%)', type: 'number', icon: '📊' },
-            { key: 'deadline', label: 'Deadline', type: 'date', icon: '⏰' },
-        ],
-        material: [
-            { key: 'kuantitas_target', label: 'Kuantitas Target', type: 'number', icon: '📦' },
-            { key: 'satuan', label: 'Satuan', type: 'text', icon: '⚖️' },
-            { key: 'supplier_preferensi', label: 'Supplier Preferensi', type: 'text', icon: '🏪' },
-            { key: 'spesifikasi', label: 'Spesifikasi', type: 'text', icon: '📋' },
-        ]
-    };
-    return baseFields[form.item_type] || [];
-});
-
-// Watch untuk update planned_amount
-watch([() => form.details.quantity, () => form.details.unit_price], () => {
-    if (isGoodsOrMaterial.value) {
-        form.planned_amount = calculatedPlannedAmount.value;
-    }
-});
-
-// watch(() => form.item_type, (newType) => {
-//     if (['goods', 'material'].includes(newType)) {
-//         // Set default values untuk quantity dan unit_price jika belum ada
-//         if (!form.details.quantity) form.details.quantity = 1;
-//         if (!form.details.unit_price) form.details.unit_price = 0;
-//         form.planned_amount = calculatedPlannedAmount.value;
-//     } else {
-//         form.planned_amount = form.planned_amount || 0;
-//     }
-// });
-
-// Watch untuk reset details ketika item_type berubah
-watch(() => form.item_type, (newType, oldType) => {
-    if (newType !== oldType) {
-        // Reset details yang tidak relevan dengan type baru
-        if (newType !== 'goods') {
-            const { purchase_type, ecommerce_platform, online_link, store_maps, store_address, ...otherDetails } = form.details;
-            form.details = otherDetails;
-        }
-        
-        // Reset planned amount calculation
-        if (['goods', 'material'].includes(newType)) {
-            if (!form.details.quantity) form.details.quantity = 1;
-            if (!form.details.unit_price) form.details.unit_price = 0;
-            form.planned_amount = calculatedPlannedAmount.value;
-        }
-    }
-});
-
-// Methods
-const openEditModal = () => {
-    // Reset form dengan data item saat ini
-    form.item_type = props.item.item_type;
-    form.item_category = props.item.item_category || '';
-    form.name = props.item.name;
-    form.description = props.item.description || '';
-    form.planned_amount = props.item.planned_amount;
-    form.actual_spent = props.item.actual_spent;
-    form.status = props.item.status;
-    form.details = props.item.details || {};
-
-    // Untuk edit, default ke input text
-    showCategoryInput.value = true;
-    
-    // Set qty dan unitPrice untuk goods dan material
-    if (['goods', 'material'].includes(props.item.item_type)) {
-        form.details.quantity = props.item.details?.quantity || 1;
-        form.details.unit_price = props.item.details?.unit_price || 0;
-    }
-    
-    showEditModal.value = true;
-}
-
-const updateItem = () => {
-    form.put(route('projects.items.update', { 
-        project: props.project.id, 
-        item: props.item.id 
-    }), {
-        preserveScroll: true,
-        onSuccess: () => {
-            showEditModal.value = false;
-            form.reset();
-            // Refresh halaman untuk menampilkan data terbaru
-            router.reload();
-        },
-        onError: (errors) => {
-            console.error('Update error:', errors);
-        }
-    });
-}
-
-const closeModal = () => {
-    showEditModal.value = false;
-    form.clearErrors();
-    form.reset();
-}
-
-const refreshData = () => {
-    router.reload({ only: ['item'] })
-}
-
-const openLink = (url) => {
-    if (url) {
-        window.open(url, '_blank')
-    }
-}
-
-const updatePlannedAmount = () => {
-    if (isGoodsOrMaterial.value) {
-        form.planned_amount = calculatedPlannedAmount.value;
-    }
-};
-
-// Format functions
-const formatCurrency = (amount) => {
-    return new Intl.NumberFormat('id-ID', {
-        style: 'currency',
-        currency: 'IDR',
-        minimumFractionDigits: 0
-    }).format(amount)
-}
-
-const formatItemType = (type) => {
-    const typeMap = {
-        goods: 'Barang',
-        service: 'Jasa',
-        document: 'Dokumen',
-        task: 'Tugas',
-        material: 'Material'
-    }
-    return typeMap[type] || type
-}
-
-const formatStatus = (status) => {
-    const statusMap = {
-        needed: 'Diperlukan',
-        in_progress: 'Dalam Proses',
-        ready: 'Siap',
-        complete: 'Selesai',
-        cancelled: 'Dibatalkan'
-    }
-    return statusMap[status] || status
-}
-
-const formatProjectStatus = (status) => {
-    const statusMap = {
-        planning: 'Perencanaan',
-        on_going: 'Berjalan',
-        completed: 'Selesai',
-        cancelled: 'Dibatalkan'
-    }
-    return statusMap[status] || status
-}
-</script>
-
 <template>
     <AppLayout :title="`${item.name} - ${project.name}`">
         <div class="py-2 min-h-screen relative overflow-hidden">
@@ -723,8 +334,9 @@ const formatProjectStatus = (status) => {
                             </div>
                         </div>
 
-                        <!-- ✅ CHECKLIST MANAGER -->
+                        <!-- ✅ CHECKLIST MANAGER - Hanya untuk item_type selain goods dan material -->
                         <ChecklistManager
+                            v-if="!isItemGoodsOrMaterial"
                             :project-item="item"
                             :checklists="item.checklists || []"
                             :item-name="item.name"
@@ -1158,6 +770,395 @@ const formatProjectStatus = (status) => {
         </div>
     </AppLayout>
 </template>
+
+<script setup>
+import AppLayout from '@/Layouts/AppLayout.vue'
+import { ref, computed, watch, onMounted  } from 'vue'
+import { Link, router, useForm } from '@inertiajs/vue3'
+import BaseButton from '@/Components/Base/BaseButton.vue'
+import BaseModal from '@/Components/Base/BaseModal.vue'
+import ChecklistManager from '@/Components/Project/ChecklistManager.vue'
+import SelectInput from '@/Components/Form/SelectInput.vue'
+import TextInput from '@/Components/Form/TextInput.vue'
+import TextAreaInput from '@/Components/Form/TextAreaInput.vue'
+import AccountInput from '@/Components/Form/AccountInput.vue'
+import PaymentManager from '@/Components/Project/PaymentManager.vue'
+import axios from 'axios'; // TAMBAHKAN INI JIKA BELUM ADA
+
+const props = defineProps({
+    item: Object,
+    project: Object,
+    canEdit: Boolean
+})
+
+// State
+const showEditModal = ref(false)
+const qty = ref(1)
+const unitPrice = ref(0)
+
+const showCategoryInput = ref(false) // TAMBAHKAN INI
+const availableCategories = ref([]) // TAMBAHKAN INI
+
+// Initialize data
+onMounted(() => {
+    loadCategories(); // LOAD CATEGORIES SAAT KOMPONEN MOUNT
+});
+// Forms
+const form = useForm({
+    item_type: props.item.item_type,
+     item_category: props.item.item_category || '',
+    name: props.item.name,
+    description: props.item.description || '',
+    planned_amount: props.item.planned_amount,
+    actual_spent: props.item.actual_spent,
+    status: props.item.status,
+    details: props.item.details || {},
+});
+
+// Computed untuk kategori
+const hasExistingCategories = computed(() => {
+    return availableCategories.value && availableCategories.value.length > 0;
+});
+
+const shouldShowCategoryInput = computed(() => {
+    return showCategoryInput.value || !hasExistingCategories.value;
+});
+
+const categoryOptions = computed(() => {
+    if (!availableCategories.value || !Array.isArray(availableCategories.value)) {
+        return [];
+    }
+    return availableCategories.value.map(cat => ({ value: cat, label: cat }));
+});
+
+// Load categories dari API
+const loadCategories = async () => {
+    try {
+        console.log('Loading categories for project:', props.project.id);
+        const response = await axios.get(route('projects.items.api.categories', { 
+            project: props.project.id 
+        }));
+        
+        console.log('Categories API response:', response.data);
+        
+        // Handle response yang berbeda-beda
+        if (response.data && response.data.success) {
+            availableCategories.value = response.data.categories || [];
+        } else if (Array.isArray(response.data)) {
+            availableCategories.value = response.data;
+        } else if (response.data && Array.isArray(response.data.categories)) {
+            availableCategories.value = response.data.categories;
+        } else {
+            console.warn('Unexpected categories response format:', response.data);
+            availableCategories.value = [];
+        }
+        
+        console.log('Final available categories:', availableCategories.value);
+        
+    } catch (error) {
+        console.error('Error loading categories:', error);
+        availableCategories.value = [];
+    }
+};
+
+// Computed untuk form
+const isGoodsOrMaterial = computed(() => {
+    return ['goods', 'material'].includes(form.item_type);
+});
+
+const calculatedPlannedAmount = computed(() => {
+    if (!isGoodsOrMaterial.value) return form.planned_amount;
+    
+    const quantity = parseFloat(form.details.quantity) || 0;
+    const unitPrice = parseFloat(form.details.unit_price) || 0;
+    return quantity * unitPrice;
+});
+
+// Computed untuk UI
+const canEditItem = computed(() => {
+    return props.canEdit && props.item.status !== 'complete';
+});
+
+const isItemGoodsOrMaterial = computed(() => {
+    return ['goods', 'material'].includes(props.item.item_type);
+});
+
+const hasGoodsDetails = computed(() => {
+    if (!props.item.details) return false
+    const goodsFields = ['ukuran', 'warna', 'material', 'merk']
+    return goodsFields.some(field => props.item.details[field])
+})
+
+const hasPurchaseDetails = computed(() => {
+    if (!props.item.details) return false;
+    
+    const details = { ...props.item.details };
+    // Hapus quantity dan unit_price dari pengecekan
+    delete details.quantity;
+    delete details.unit_price;
+    
+    return Object.keys(details).length > 0;
+});
+
+// Item type options
+const itemTypeOptions = [
+    { value: 'goods', label: '🛍️ Barang' },
+    { value: 'service', label: '👨‍💼 Jasa' },
+    { value: 'document', label: '📄 Dokumen' },
+    { value: 'task', label: '✅ Tugas' },
+    { value: 'material', label: '🏗️ Material' },
+];
+
+// Status options
+const statusOptions = [
+    { value: 'needed', label: '⏳ Diperlukan' },
+    { value: 'in_progress', label: '🚧 Dalam Proses' },
+    { value: 'ready', label: '📦 Siap' },
+    { value: 'complete', label: '✅ Selesai' },
+    { value: 'cancelled', label: '❌ Dibatalkan' },
+];
+
+// Purchase type options untuk barang
+const purchaseTypeOptions = [
+    { value: 'online', label: '🛒 Beli Online' },
+    { value: 'store', label: '🏪 Beli di Toko' },
+];
+
+// E-commerce platforms
+const ecommercePlatforms = {
+    'shopee': { name: 'Shopee', icon: '🟠', color: 'text-orange-500' },
+    'tokopedia': { name: 'Tokopedia', icon: '🟢', color: 'text-green-500' },
+    'lazada': { name: 'Lazada', icon: '🔵', color: 'text-blue-500' },
+    'blibli': { name: 'Blibli', icon: '🔴', color: 'text-red-500' },
+    'bukalapak': { name: 'Bukalapak', icon: '🟡', color: 'text-yellow-500' },
+    'other': { name: 'Lainnya', icon: '🛒', color: 'text-gray-500' }
+}
+
+// Dynamic detail fields berdasarkan item type
+const detailFields = computed(() => {
+    const baseFields = {
+        goods: [
+            // Purchase Type Radio
+            { 
+                key: 'purchase_type', 
+                label: 'Cara Pembelian', 
+                type: 'radio', 
+                icon: '🛒',
+                options: purchaseTypeOptions
+            },
+            // Online fields
+            ...(form.details?.purchase_type === 'online' ? [
+                { 
+                    key: 'ecommerce_platform', 
+                    label: 'Platform Online', 
+                    type: 'select', 
+                    icon: '📱',
+                    options: Object.entries(ecommercePlatforms).map(([value, data]) => ({
+                        value,
+                        label: `${data.icon} ${data.name}`
+                    }))
+                },
+                { 
+                    key: 'online_link', 
+                    label: 'Link Produk', 
+                    type: 'url', 
+                    icon: '🔗',
+                    placeholder: 'https://...'
+                }
+            ] : []),
+            // Store fields
+            ...(form.details?.purchase_type === 'store' ? [
+                { 
+                    key: 'store_maps', 
+                    label: 'Link Google Maps', 
+                    type: 'url', 
+                    icon: '🗺️',
+                    placeholder: 'https://maps.google.com/...'
+                },
+                { 
+                    key: 'store_address', 
+                    label: 'Alamat Toko', 
+                    type: 'textarea', 
+                    icon: '🏪',
+                    placeholder: 'Alamat lengkap toko...'
+                }
+            ] : []),
+            // Common goods fields
+            { key: 'ukuran', label: 'Ukuran', type: 'text', icon: '📏' },
+            { key: 'warna', label: 'Warna', type: 'text', icon: '🎨' },
+            { key: 'material', label: 'Material', type: 'text', icon: '⚙️' },
+            { key: 'merk', label: 'Merk', type: 'text', icon: '🏷️' },
+        ],
+        service: [
+            { key: 'vendor_kontak', label: 'Kontak Vendor', type: 'text', icon: '📞' },
+            { key: 'tanggal_kontrak', label: 'Tanggal Kontrak', type: 'date', icon: '📅' },
+            { key: 'sisa_pembayaran', label: 'Sisa Pembayaran', type: 'number', icon: '💰' },
+            { key: 'menu_pilihan', label: 'Menu Pilihan', type: 'text', icon: '🍽️' },
+            { key: 'lokasi', label: 'Lokasi', type: 'text', icon: '📍' },
+        ],
+        document: [
+            { key: 'tanggal_kadaluarsa', label: 'Tanggal Kadaluarsa', type: 'date', icon: '📅' },
+            { key: 'lokasi_fisik', label: 'Lokasi Fisik', type: 'text', icon: '📁' },
+            { key: 'status_legalitas', label: 'Status Legalitas', type: 'text', icon: '⚖️' },
+            { key: 'nomor_dokumen', label: 'Nomor Dokumen', type: 'text', icon: '🔢' },
+        ],
+        task: [
+            { key: 'pihak_pengurus', label: 'Pihak Pengurus', type: 'text', icon: '👤' },
+            { key: 'biaya_administrasi', label: 'Biaya Administrasi', type: 'number', icon: '💰' },
+            { key: 'progress_persentase', label: 'Progress (%)', type: 'number', icon: '📊' },
+            { key: 'deadline', label: 'Deadline', type: 'date', icon: '⏰' },
+        ],
+        material: [
+            { key: 'kuantitas_target', label: 'Kuantitas Target', type: 'number', icon: '📦' },
+            { key: 'satuan', label: 'Satuan', type: 'text', icon: '⚖️' },
+            { key: 'supplier_preferensi', label: 'Supplier Preferensi', type: 'text', icon: '🏪' },
+            { key: 'spesifikasi', label: 'Spesifikasi', type: 'text', icon: '📋' },
+        ]
+    };
+    return baseFields[form.item_type] || [];
+});
+
+// Watch untuk update planned_amount
+watch([() => form.details.quantity, () => form.details.unit_price], () => {
+    if (isGoodsOrMaterial.value) {
+        form.planned_amount = calculatedPlannedAmount.value;
+    }
+});
+
+// watch(() => form.item_type, (newType) => {
+//     if (['goods', 'material'].includes(newType)) {
+//         // Set default values untuk quantity dan unit_price jika belum ada
+//         if (!form.details.quantity) form.details.quantity = 1;
+//         if (!form.details.unit_price) form.details.unit_price = 0;
+//         form.planned_amount = calculatedPlannedAmount.value;
+//     } else {
+//         form.planned_amount = form.planned_amount || 0;
+//     }
+// });
+
+// Watch untuk reset details ketika item_type berubah
+watch(() => form.item_type, (newType, oldType) => {
+    if (newType !== oldType) {
+        // Reset details yang tidak relevan dengan type baru
+        if (newType !== 'goods') {
+            const { purchase_type, ecommerce_platform, online_link, store_maps, store_address, ...otherDetails } = form.details;
+            form.details = otherDetails;
+        }
+        
+        // Reset planned amount calculation
+        if (['goods', 'material'].includes(newType)) {
+            if (!form.details.quantity) form.details.quantity = 1;
+            if (!form.details.unit_price) form.details.unit_price = 0;
+            form.planned_amount = calculatedPlannedAmount.value;
+        }
+    }
+});
+
+// Methods
+const openEditModal = () => {
+    // Reset form dengan data item saat ini
+    form.item_type = props.item.item_type;
+    form.item_category = props.item.item_category || '';
+    form.name = props.item.name;
+    form.description = props.item.description || '';
+    form.planned_amount = props.item.planned_amount;
+    form.actual_spent = props.item.actual_spent;
+    form.status = props.item.status;
+    form.details = props.item.details || {};
+
+    // Untuk edit, default ke input text
+    showCategoryInput.value = true;
+    
+    // Set qty dan unitPrice untuk goods dan material
+    if (['goods', 'material'].includes(props.item.item_type)) {
+        form.details.quantity = props.item.details?.quantity || 1;
+        form.details.unit_price = props.item.details?.unit_price || 0;
+    }
+    
+    showEditModal.value = true;
+}
+
+const updateItem = () => {
+    form.put(route('projects.items.update', { 
+        project: props.project.id, 
+        item: props.item.id 
+    }), {
+        preserveScroll: true,
+        onSuccess: () => {
+            showEditModal.value = false;
+            form.reset();
+            // Refresh halaman untuk menampilkan data terbaru
+            router.reload();
+        },
+        onError: (errors) => {
+            console.error('Update error:', errors);
+        }
+    });
+}
+
+const closeModal = () => {
+    showEditModal.value = false;
+    form.clearErrors();
+    form.reset();
+}
+
+const refreshData = () => {
+    router.reload({ only: ['item'] })
+}
+
+const openLink = (url) => {
+    if (url) {
+        window.open(url, '_blank')
+    }
+}
+
+const updatePlannedAmount = () => {
+    if (isGoodsOrMaterial.value) {
+        form.planned_amount = calculatedPlannedAmount.value;
+    }
+};
+
+// Format functions
+const formatCurrency = (amount) => {
+    return new Intl.NumberFormat('id-ID', {
+        style: 'currency',
+        currency: 'IDR',
+        minimumFractionDigits: 0
+    }).format(amount)
+}
+
+const formatItemType = (type) => {
+    const typeMap = {
+        goods: 'Barang',
+        service: 'Jasa',
+        document: 'Dokumen',
+        task: 'Tugas',
+        material: 'Material'
+    }
+    return typeMap[type] || type
+}
+
+const formatStatus = (status) => {
+    const statusMap = {
+        needed: 'Diperlukan',
+        in_progress: 'Dalam Proses',
+        ready: 'Siap',
+        complete: 'Selesai',
+        cancelled: 'Dibatalkan'
+    }
+    return statusMap[status] || status
+}
+
+const formatProjectStatus = (status) => {
+    const statusMap = {
+        planning: 'Perencanaan',
+        on_going: 'Berjalan',
+        completed: 'Selesai',
+        cancelled: 'Dibatalkan'
+    }
+    return statusMap[status] || status
+}
+</script>
 
 <style scoped>
 /* Utility classes untuk mobile */

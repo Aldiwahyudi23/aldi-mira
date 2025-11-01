@@ -10,7 +10,7 @@
         >
             <div
                 v-show="show"
-                class="fixed inset-0 z-[99999] flex items-center justify-center p-4"
+                class="fixed inset-0 z-[99999] flex items-center justify-center p-3 md:p-4"
                 aria-labelledby="modal-title"
                 aria-modal="true"
                 role="dialog"
@@ -22,49 +22,50 @@
                 ></div>
 
                 <!-- Modal container -->
-                <div class="relative w-full max-w-2xl max-h-[85vh] flex flex-col bg-white rounded-3xl shadow-2xl overflow-hidden transform transition-all duration-300 scale-100">
+                <div class="relative w-full max-h-[90vh] flex flex-col bg-white rounded-xl md:rounded-3xl shadow-2xl overflow-hidden transform transition-all duration-300 scale-100"
+                     :class="modalSize">
                     <!-- Header - Fixed -->
-                    <div class="flex-shrink-0 bg-gradient-to-r from-pink-400/10 to-sky-400/10 py-4 px-6 border-b border-pink-100/50">
+                    <div class="flex-shrink-0 bg-gradient-to-r from-pink-400/10 to-sky-400/10 py-3 px-4 md:py-4 md:px-6 border-b border-pink-100/50">
                         <div class="flex items-center">
-                            <div class="flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-2xl bg-gradient-to-r from-pink-400 to-sky-400 shadow-lg">
-                                <span class="text-white text-xl">{{ icon }}</span>
+                            <div class="flex-shrink-0 flex items-center justify-center h-8 w-8 md:h-12 md:w-12 rounded-lg md:rounded-2xl bg-gradient-to-r from-pink-400 to-sky-400 shadow-lg">
+                                <span class="text-white text-base md:text-xl">{{ icon }}</span>
                             </div>
-                            <div class="ml-4 flex-1">
-                                <h3 class="text-xl font-bold bg-gradient-to-r from-pink-600 to-sky-600 bg-clip-text text-transparent" id="modal-title">
+                            <div class="ml-3 flex-1 min-w-0">
+                                <h3 class="text-base md:text-xl font-bold bg-gradient-to-r from-pink-600 to-sky-600 bg-clip-text text-transparent truncate" id="modal-title">
                                     {{ title }}
                                 </h3>
-                                <p class="mt-1 text-sm text-gray-600 flex items-center gap-2">
-                                    <span>💫</span>
+                                <p class="mt-0.5 text-xs text-gray-600 flex items-center gap-1 md:gap-2 line-clamp-1">
+                                    <span class="hidden md:inline">💫</span>
                                     {{ description }}
                                 </p>
                             </div>
                             <button
                                 v-if="closable"
                                 @click="close"
-                                class="flex-shrink-0 p-2 rounded-2xl text-gray-400 hover:text-gray-600 hover:bg-pink-50 transition-all duration-200 transform hover:scale-110"
+                                class="flex-shrink-0 p-1.5 md:p-2 rounded-lg md:rounded-2xl text-gray-400 hover:text-gray-600 hover:bg-pink-50 transition-all duration-200 transform hover:scale-110"
                             >
-                                <span class="text-lg">✕</span>
+                                <span class="text-sm md:text-lg">✕</span>
                             </button>
                         </div>
                     </div>
 
                     <!-- Content - Scrollable -->
                     <div class="flex-1 overflow-y-auto bg-gradient-to-br from-white via-pink-50/30 to-sky-50/30">
-                        <div class="p-6">
+                        <div class="p-4 md:p-6">
                             <slot></slot>
                         </div>
                     </div>
 
                     <!-- Footer - Fixed -->
-                    <div v-if="$slots.footer || showCancel" class="flex-shrink-0 bg-gradient-to-r from-pink-50/50 to-sky-50/50 px-6 py-4 border-t border-pink-100/50">
-                        <div class="flex flex-col-reverse sm:flex-row gap-3 justify-end">
+                    <div v-if="$slots.footer || showCancel" class="flex-shrink-0 bg-gradient-to-r from-pink-50/50 to-sky-50/50 px-3 md:px-6 py-3 md:py-4 border-t border-pink-100/50">
+                        <div class="flex gap-2 md:gap-3 justify-end">
                             <slot name="footer">
                                 <BaseButton
                                     v-if="showCancel"
                                     type="button"
                                     variant="secondary"
                                     @click="close"
-                                    class="w-full sm:w-auto"
+                                    class="flex-1 md:flex-none text-sm md:text-base py-2 md:py-3"
                                 >
                                     <template #icon>❌</template>
                                     {{ cancelText }}
@@ -74,7 +75,7 @@
                                     :variant="confirmVariant"
                                     @click="confirm"
                                     :loading="confirmLoading"
-                                    class="w-full sm:w-auto"
+                                    class="flex-1 md:flex-none text-sm md:text-base py-2 md:py-3"
                                 >
                                     <template #icon>{{ confirmIcon }}</template>
                                     {{ confirmText }}
@@ -152,10 +153,10 @@ const emit = defineEmits(['update:show', 'confirm', 'close']);
 
 const modalSize = computed(() => {
     const sizes = {
-        sm: 'max-w-md',
-        md: 'max-w-lg',
-        lg: 'max-w-2xl',
-        xl: 'max-w-4xl'
+        sm: 'max-w-xs md:max-w-md',
+        md: 'max-w-sm md:max-w-lg',
+        lg: 'max-w-md md:max-w-2xl',
+        xl: 'max-w-lg md:max-w-4xl'
     };
     return sizes[props.size];
 });
@@ -205,23 +206,31 @@ onUnmounted(() => {
 <style scoped>
 /* Custom scrollbar untuk content area */
 .flex-1::-webkit-scrollbar {
-    width: 8px;
+    width: 4px;
 }
 
 .flex-1::-webkit-scrollbar-track {
     background: rgba(255, 255, 255, 0.1);
-    border-radius: 10px;
-    margin: 8px;
+    border-radius: 6px;
+    margin: 2px;
 }
 
 .flex-1::-webkit-scrollbar-thumb {
     background: linear-gradient(to bottom, #f472b6, #60a5fa);
-    border-radius: 10px;
-    border: 2px solid transparent;
+    border-radius: 6px;
+    border: 1px solid transparent;
     background-clip: padding-box;
 }
 
 .flex-1::-webkit-scrollbar-thumb:hover {
     background: linear-gradient(to bottom, #ec4899, #3b82f6);
+}
+
+/* Untuk truncate text */
+.line-clamp-1 {
+    display: -webkit-box;
+    -webkit-line-clamp: 1;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
 }
 </style>

@@ -1,6 +1,6 @@
 <template>
-    <div class="mb-6">
-        <label v-if="label" :for="id" class="block text-sm font-semibold text-gray-700 mb-3 flex items-center gap-2">
+    <div class="mb-4 md:mb-6">
+        <label v-if="label" :for="id" class="block text-sm font-semibold text-gray-700 mb-2 md:mb-3 flex items-center gap-2">
             <span v-if="icon" :class="iconClass">{{ icon }}</span>
             {{ label }}
             <span v-if="required" class="text-red-500">*</span>
@@ -15,9 +15,9 @@
                 :disabled="disabled"
                 :rows="rows"
                 :maxlength="maxLength"
-                class="w-full border border-gray-200 rounded-2xl p-4 focus:ring-2 focus:ring-blue-300 focus:border-blue-300 transition-all duration-300 bg-white/50 backdrop-blur-sm resize-vertical"
+                class="w-full border border-gray-200 rounded-xl md:rounded-2xl p-3 md:p-4 focus:ring-2 focus:ring-blue-300 focus:border-blue-300 transition-all duration-300 bg-white/50 backdrop-blur-sm resize-vertical text-sm md:text-base"
                 :class="{
-                    'pl-12': icon,
+                    'pl-10 md:pl-12': icon,
                     'border-red-300': error,
                     'opacity-50 cursor-not-allowed': disabled
                 }"
@@ -25,21 +25,21 @@
                 @input="handleInput"
             />
             
-            <div v-if="icon" class="absolute left-4 top-4 text-gray-400">
+            <div v-if="icon" class="absolute left-3 md:left-4 top-3 md:top-4 text-gray-400 text-base md:text-lg">
                 {{ icon }}
             </div>
 
-            <div v-if="showCounter" class="absolute right-4 bottom-4 text-xs text-gray-400 bg-white/80 px-2 py-1 rounded-full">
+            <div v-if="showCounter" class="absolute right-3 md:right-4 bottom-3 md:bottom-4 text-xs text-gray-400 bg-white/80 px-1.5 md:px-2 py-0.5 md:py-1 rounded-full">
                 {{ currentLength }} / {{ maxLength }}
             </div>
         </div>
         
-        <p v-if="error" class="mt-2 text-sm text-red-500 flex items-center gap-2">
+        <p v-if="error" class="mt-1 md:mt-2 text-xs md:text-sm text-red-500 flex items-center gap-1 md:gap-2">
             <span>⚠️</span>
             {{ error }}
         </p>
         
-        <p v-if="help" class="mt-2 text-sm text-gray-500 flex items-center gap-2">
+        <p v-if="help" class="mt-1 md:mt-2 text-xs md:text-sm text-gray-500 flex items-center gap-1 md:gap-2">
             <span>💡</span>
             {{ help }}
         </p>

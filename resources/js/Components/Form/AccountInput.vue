@@ -1,52 +1,52 @@
 <template>
-  <div class="mb-6">
-    <label v-if="label" :for="id" class="block text-sm font-semibold text-gray-700 mb-3 flex items-center gap-2">
-            <span v-if="icon" :class="iconClass">{{ icon }}</span>
-            {{ label }}
-            <span v-if="required" class="text-red-500">*</span>
-        </label>
+  <div class="mb-4 md:mb-6">
+    <label v-if="label" :for="id" class="block text-sm font-semibold text-gray-700 mb-2 md:mb-3 flex items-center gap-2">
+      <span v-if="icon" :class="iconClass">{{ icon }}</span>
+      {{ label }}
+      <span v-if="required" class="text-red-500">*</span>
+    </label>
 
-  <div class="relative">
-    <input
-      ref="inputRef"
-      :id="id"
-      type="text"
-      :value="displayValue"
-      @input="handleInput"
-      @focus="handleFocus"
-      @blur="handleBlur"
-      @keydown="handleKeydown"
-      :placeholder="placeholder"
-      :disabled="disabled"
-      class="w-full border border-gray-200 rounded-2xl p-4 focus:ring-2 focus:ring-blue-300 focus:border-blue-300 transition-all duration-300 bg-white/50 backdrop-blur-sm font-mono"
-      :class="{
-        'pl-20': icon && showCurrency,   // Jika ada dua elemen di kiri
-        'pl-12': (icon && !showCurrency) || (!icon && showCurrency),
-        'opacity-50 cursor-not-allowed': disabled,
-        'border-red-300': error
-      }"
-    />
+    <div class="relative">
+      <input
+        ref="inputRef"
+        :id="id"
+        type="text"
+        :value="displayValue"
+        @input="handleInput"
+        @focus="handleFocus"
+        @blur="handleBlur"
+        @keydown="handleKeydown"
+        :placeholder="placeholder"
+        :disabled="disabled"
+        class="w-full border border-gray-200 rounded-xl md:rounded-2xl p-3 md:p-4 focus:ring-2 focus:ring-blue-300 focus:border-blue-300 transition-all duration-300 bg-white/50 backdrop-blur-sm font-mono text-sm md:text-base"
+        :class="{
+          'pl-16': icon && showCurrency,   // Jika ada dua elemen di kiri
+          'pl-10': (icon && !showCurrency) || (!icon && showCurrency),
+          'pl-3': !icon && !showCurrency,
+          'opacity-50 cursor-not-allowed': disabled,
+          'border-red-300': error
+        }"
+      />
 
-     <div v-if="icon" class="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400">
-                {{ icon }}
-            </div>
+      <div v-if="icon" class="absolute left-3 md:left-4 top-1/2 transform -translate-y-1/2 text-gray-400 text-base md:text-lg">
+        {{ icon }}
+      </div>
 
-    <button
-      v-if="showCopyButton && displayValue"
-      @click="copyToClipboard"
-      class="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-pink-500 transition-colors"
-      type="button"
-      :title="copied ? 'Tersalin!' : 'Salin ke clipboard'"
-    >
-      {{ copied ? '✅' : '📋' }}
-    </button>
-  </div>
+      <button
+        v-if="showCopyButton && displayValue"
+        @click="copyToClipboard"
+        class="absolute right-3 md:right-4 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-pink-500 transition-colors text-sm"
+        type="button"
+        :title="copied ? 'Tersalin!' : 'Salin ke clipboard'"
+      >
+        {{ copied ? '✅' : '📋' }}
+      </button>
+    </div>
 
-
-    <p v-if="error" class="mt-2 text-sm text-red-500 flex items-center gap-2">
+    <p v-if="error" class="mt-1 md:mt-2 text-xs md:text-sm text-red-500 flex items-center gap-1 md:gap-2">
       ⚠️ {{ error }}
     </p>
-    <p v-if="helper" class="mt-2 text-sm text-gray-500 flex items-center gap-2">
+    <p v-if="helper" class="mt-1 md:mt-2 text-xs md:text-sm text-gray-500 flex items-center gap-1 md:gap-2">
       💡 {{ helper }}
     </p>
   </div>

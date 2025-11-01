@@ -1,19 +1,19 @@
 <template>
-  <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-4 mb-4">
+  <div class="bg-white rounded-xl md:rounded-2xl shadow-sm border border-gray-100 p-3 md:p-4 mb-4">
     <!-- Header -->
-    <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+    <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-3 md:gap-4">
       <div class="flex items-center gap-2">
-        <span class="text-lg">🔍</span>
-        <h3 class="font-semibold text-gray-800">Filter Data</h3>
+        <span class="text-base md:text-lg">🔍</span>
+        <h3 class="font-semibold text-gray-800 text-sm md:text-base">Filter Data</h3>
       </div>
 
       <!-- Filters -->
-      <div class="flex flex-wrap gap-2">
+      <div class="flex flex-col md:flex-row gap-2 md:gap-2 w-full md:w-auto">
         <!-- SelectInput replaces the native <select> -->
         <div
           v-for="(config, key) in options"
           :key="key"
-          class="min-w-[150px] flex-1"
+          class="w-full md:min-w-[150px] md:flex-1"
         >
           <SelectInput
             v-model="localFilters[key]"
@@ -27,12 +27,12 @@
         </div>
 
         <!-- Reset button -->
-        <div class="flex items-end">
+        <div class="flex items-end mt-2 md:mt-0">
           <BaseButton
             @click="clearAll"
             variant="secondary"
-            size="sm"
-            class="h-[42px]"
+            size="xs"
+            class="h-[38px] md:h-[42px] w-full md:w-auto text-xs"
             :disabled="!hasActiveFilters"
           >
             <template #icon>🔄</template>
@@ -43,9 +43,9 @@
     </div>
 
     <!-- Active filters indicator -->
-    <div v-if="hasActiveFilters" class="mt-3 pt-3 border-t border-gray-100">
-      <div class="flex items-center gap-2 flex-wrap">
-        <span class="text-sm text-gray-600">Filter aktif:</span>
+    <div v-if="hasActiveFilters" class="mt-2 md:mt-3 pt-2 md:pt-3 border-t border-gray-100">
+      <div class="flex items-center gap-1 md:gap-2 flex-wrap">
+        <span class="text-xs md:text-sm text-gray-600">Filter aktif:</span>
         <span
           v-for="(value, key) in activeFilters"
           :key="key"
@@ -54,7 +54,7 @@
           {{ getFilterLabel(key, value) }}
           <button
             @click="clearFilter(key)"
-            class="hover:text-pink-900 transition-colors"
+            class="hover:text-pink-900 transition-colors text-xs"
           >
             ×
           </button>

@@ -1,9 +1,9 @@
 <template>
-  <div class="mb-6 relative" ref="rootRef">
+  <div class="mb-4 md:mb-6 relative" ref="rootRef">
     <label
       v-if="label"
       :for="id"
-      class="block text-sm font-semibold text-gray-700 mb-3 flex items-center gap-2"
+      class="block text-sm font-semibold text-gray-700 mb-2 md:mb-3 flex items-center gap-2"
     >
       <span v-if="icon" :class="iconClass">{{ icon }}</span>
       {{ label }}
@@ -18,19 +18,19 @@
     >
       <!-- Display area -->
       <div
-        class="flex items-center justify-between w-full border border-pink-200 rounded-2xl bg-white/70 backdrop-blur-md p-4 shadow-sm hover:shadow-md transition-all duration-300"
+        class="flex items-center justify-between w-full border border-pink-200 rounded-xl md:rounded-2xl bg-white/70 backdrop-blur-md p-3 md:p-4 shadow-sm hover:shadow-md transition-all duration-300"
         :class="{ 'border-red-300': error }"
       >
         <div class="flex items-center gap-2 text-gray-700 truncate">
-          <span v-if="icon" class="text-pink-400">{{ icon }}</span>
-          <span v-if="selectedLabel" class="font-medium truncate">
+          <span v-if="icon" class="text-pink-400 text-base md:text-lg">{{ icon }}</span>
+          <span v-if="selectedLabel" class="font-medium truncate text-sm md:text-base">
             {{ selectedLabel }}
           </span>
-          <span v-else class="text-gray-400 truncate">
+          <span v-else class="text-gray-400 truncate text-sm md:text-base">
             {{ placeholder }}
           </span>
         </div>
-        <span class="text-gray-400 transform transition-transform duration-300" :class="{ 'rotate-180': showDropdown }">
+        <span class="text-gray-400 transform transition-transform duration-300 text-sm" :class="{ 'rotate-180': showDropdown }">
           🔽
         </span>
       </div>
@@ -40,7 +40,7 @@
         <div
           v-if="showDropdown"
           ref="dropdownRef"
-          class="absolute z-50 w-full mt-2 bg-white rounded-2xl shadow-lg border border-pink-100 overflow-hidden"
+          class="absolute z-50 w-full mt-1 md:mt-2 bg-white rounded-xl md:rounded-2xl shadow-lg border border-pink-100 overflow-hidden"
           @click.stop
         >
           <!-- Search input -->
@@ -50,25 +50,25 @@
               ref="searchRef"
               type="text"
               placeholder="Ketik untuk mencari..."
-              class="w-full p-2 rounded-xl border border-pink-200 focus:ring-2 focus:ring-pink-300 outline-none text-gray-700"
+              class="w-full p-2 rounded-lg md:rounded-xl border border-pink-200 focus:ring-2 focus:ring-pink-300 outline-none text-gray-700 text-sm md:text-base"
               @click.stop
             />
           </div>
 
           <!-- Options -->
-          <div class="max-h-56 overflow-y-auto">
+          <div class="max-h-48 md:max-h-56 overflow-y-auto">
             <div
               v-for="option in filteredOptions"
               :key="option.value"
               @click.stop="selectOption(option)"
-              class="p-3 hover:bg-pink-50 transition-all duration-150 flex items-center justify-between cursor-pointer"
+              class="p-2 md:p-3 hover:bg-pink-50 transition-all duration-150 flex items-center justify-between cursor-pointer"
               :class="{ 'bg-pink-100': option.value === modelValue }"
             >
-              <span class="text-gray-700 truncate">{{ option.label }}</span>
-              <span v-if="option.value === modelValue" class="text-pink-400">💞</span>
+              <span class="text-gray-700 truncate text-sm md:text-base">{{ option.label }}</span>
+              <span v-if="option.value === modelValue" class="text-pink-400 text-sm">💞</span>
             </div>
 
-            <div v-if="filteredOptions.length === 0" class="p-3 text-gray-400 text-center">
+            <div v-if="filteredOptions.length === 0" class="p-2 md:p-3 text-gray-400 text-center text-sm md:text-base">
               Tidak ditemukan 💔
             </div>
           </div>
@@ -77,10 +77,10 @@
     </div>
 
     <!-- Error & help text -->
-    <p v-if="error" class="mt-2 text-sm text-red-500 flex items-center gap-2">
+    <p v-if="error" class="mt-1 md:mt-2 text-xs md:text-sm text-red-500 flex items-center gap-1 md:gap-2">
       ⚠️ {{ error }}
     </p>
-    <p v-if="help" class="mt-2 text-sm text-gray-500 flex items-center gap-2">
+    <p v-if="help" class="mt-1 md:mt-2 text-xs md:text-sm text-gray-500 flex items-center gap-1 md:gap-2">
       💡 {{ help }}
     </p>
   </div>
@@ -207,11 +207,24 @@ defineExpose({
 
 /* scrollbar yang lembut (opsional) */
 ::-webkit-scrollbar {
-  height: 6px;
-  width: 6px;
+  height: 4px;
+  width: 4px;
 }
 ::-webkit-scrollbar-thumb {
   background: #f9c6d2;
-  border-radius: 6px;
+  border-radius: 4px;
+}
+
+/* Utility classes untuk mobile */
+@media (max-width: 640px) {
+  .overflow-x-auto {
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+  
+  .overflow-x-auto::-webkit-scrollbar {
+    display: none;
+  }
 }
 </style>

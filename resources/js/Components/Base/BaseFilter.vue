@@ -1,32 +1,34 @@
 <template>
-    <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-4 mb-4">
+    <div class="bg-white rounded-xl md:rounded-2xl shadow-sm border border-gray-100 p-3 md:p-4 mb-4">
         <!-- Filter Header -->
-        <div class="flex items-center justify-between mb-4">
-            <div class="flex items-center gap-3">
-                <span class="text-2xl">🔍</span>
+        <div class="flex items-center justify-between mb-3 md:mb-4">
+            <div class="flex items-center gap-2 md:gap-3">
+                <span class="text-xl md:text-2xl">🔍</span>
                 <div>
-                    <h3 class="font-semibold text-gray-800">Filter Data</h3>
-                    <p class="text-sm text-gray-500">Saring data berdasarkan kriteria tertentu</p>
+                    <h3 class="font-semibold text-gray-800 text-sm md:text-base">Filter Data</h3>
+                    <p class="text-xs md:text-sm text-gray-500">Saring data berdasarkan kriteria</p>
                 </div>
             </div>
             
-            <div class="flex items-center gap-2">
+            <div class="flex items-center gap-1 md:gap-2">
                 <!-- Toggle Filter Visibility -->
                 <BaseButton
                     @click="showFilters = !showFilters"
                     variant="secondary"
-                    size="sm"
+                    size="xs"
+                    class="text-xs"
                 >
                     <template #icon>{{ showFilters ? '📕' : '📖' }}</template>
-                    {{ showFilters ? 'Sembunyikan' : 'Tampilkan' }} Filter
+                    {{ showFilters ? 'Sembunyikan' : 'Tampilkan' }}
                 </BaseButton>
                 
                 <!-- Reset Filters -->
                 <BaseButton
                     @click="resetFilters"
                     variant="outline"
-                    size="sm"
+                    size="xs"
                     :disabled="!hasActiveFilters"
+                    class="text-xs"
                 >
                     <template #icon>🔄</template>
                     Reset
@@ -35,20 +37,20 @@
         </div>
 
         <!-- Filter Content -->
-        <div v-if="showFilters" class="space-y-6">
+        <div v-if="showFilters" class="space-y-4 md:space-y-6">
             <!-- 🎯 SECTION 1: PERIODE & JENIS -->
-            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6">
                 <!-- Left Column: Date Range & Presets -->
-                <div class="space-y-4">
+                <div class="space-y-3 md:space-y-4">
                     <!-- Date Range -->
-                    <div class="space-y-2">
-                        <label class="block text-sm font-medium text-gray-700">
-                            <span class="flex items-center gap-2">
-                                <span>📅</span>
+                    <div class="space-y-1 md:space-y-2">
+                        <label class="block text-xs md:text-sm font-medium text-gray-700">
+                            <span class="flex items-center gap-1 md:gap-2">
+                                <span class="text-sm md:text-base">📅</span>
                                 Periode Tanggal
                             </span>
                         </label>
-                        <div class="grid grid-cols-2 gap-3">
+                        <div class="grid grid-cols-2 gap-2 md:gap-3">
                             <DateInput
                                 v-model="filters.start_date"
                                 placeholder="Dari Tanggal"
@@ -66,21 +68,21 @@
                     </div>
 
                     <!-- Quick Date Presets -->
-                    <div class="space-y-2">
-                        <label class="block text-sm font-medium text-gray-700">
-                            <span class="flex items-center gap-2">
-                                <span>⚡</span>
+                    <div class="space-y-1 md:space-y-2">
+                        <label class="block text-xs md:text-sm font-medium text-gray-700">
+                            <span class="flex items-center gap-1 md:gap-2">
+                                <span class="text-sm md:text-base">⚡</span>
                                 Periode Cepat
                             </span>
                         </label>
-                        <div class="grid grid-cols-3 gap-2">
+                        <div class="grid grid-cols-3 gap-1 md:gap-2">
                             <BaseButton
                                 v-for="preset in datePresets"
                                 :key="preset.value"
                                 @click="applyDatePreset(preset)"
                                 variant="outline"
                                 size="xs"
-                                class="justify-center"
+                                class="justify-center text-xs py-1.5 md:py-2"
                                 :class="{
                                     'bg-blue-100 border-blue-300 text-blue-700': activeDatePreset === preset.value
                                 }"
@@ -92,42 +94,42 @@
                 </div>
 
                 <!-- Right Column: Type & Amount Range -->
-                <div class="space-y-4">
+                <div class="space-y-3 md:space-y-4">
                     <!-- Type Filter -->
-                    <div class="space-y-2" v-if="showTypeFilter">
-                        <label class="block text-sm font-medium text-gray-700">
-                            <span class="flex items-center gap-2">
-                                <span>📊</span>
+                    <div class="space-y-1 md:space-y-2" v-if="showTypeFilter">
+                        <label class="block text-xs md:text-sm font-medium text-gray-700">
+                            <span class="flex items-center gap-1 md:gap-2">
+                                <span class="text-sm md:text-base">📊</span>
                                 Jenis Transaksi
                             </span>
                         </label>
-                        <div class="grid grid-cols-3 gap-2">
+                        <div class="grid grid-cols-3 gap-1 md:gap-2">
                             <button
                                 v-for="typeOpt in typeOptions.filter(opt => opt.value !== '')"
                                 :key="typeOpt.value"
                                 @click="filters.type = filters.type === typeOpt.value ? '' : typeOpt.value"
-                                class="p-2 rounded-lg border text-center transition-all font-medium text-xs"
+                                class="p-1.5 md:p-2 rounded-lg border text-center transition-all font-medium text-xs"
                                 :class="filters.type === typeOpt.value 
                                     ? (typeOpt.value === 'income' ? 'bg-green-100 text-green-700 border-green-400' : 
                                        typeOpt.value === 'expense' ? 'bg-red-100 text-red-700 border-red-400' : 
                                        'bg-blue-100 text-blue-700 border-blue-400') + ' scale-105 shadow-sm' 
                                     : 'bg-white border-gray-200 text-gray-500 hover:scale-102 hover:border-gray-300'"
                             >
-                                <div class="text-base mb-1">{{ typeOpt.label.split(' ')[0] }}</div>
+                                <div class="text-sm md:text-base mb-0.5 md:mb-1">{{ typeOpt.label.split(' ')[0] }}</div>
                                 <div class="text-xs">{{ typeOpt.label.split(' ')[1] }}</div>
                             </button>
                         </div>
                     </div>
 
                     <!-- Amount Range Filter -->
-                    <div class="space-y-2" v-if="showAmountFilter">
-                        <label class="block text-sm font-medium text-gray-700">
-                            <span class="flex items-center gap-2">
-                                <span>💰</span>
+                    <div class="space-y-1 md:space-y-2" v-if="showAmountFilter">
+                        <label class="block text-xs md:text-sm font-medium text-gray-700">
+                            <span class="flex items-center gap-1 md:gap-2">
+                                <span class="text-sm md:text-base">💰</span>
                                 Rentang Jumlah
                             </span>
                         </label>
-                        <div class="grid grid-cols-2 gap-3">
+                        <div class="grid grid-cols-2 gap-2 md:gap-3">
                             <div class="space-y-1">
                                 <AccountInput
                                     v-model="filters.min_amount"
@@ -152,12 +154,12 @@
             </div>
 
             <!-- 🎯 SECTION 2: ENTITY FILTERS (Akun, Kategori, User) -->
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-4" v-if="showAccountFilter || showCategoryFilter || showUserFilter">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-3 md:gap-4" v-if="showAccountFilter || showCategoryFilter || showUserFilter">
                 <!-- Account Filter -->
-                <div class="space-y-2" v-if="showAccountFilter && accounts.length">
-                    <label class="block text-sm font-medium text-gray-700">
-                        <span class="flex items-center gap-2">
-                            <span>🏦</span>
+                <div class="space-y-1 md:space-y-2" v-if="showAccountFilter && accounts.length">
+                    <label class="block text-xs md:text-sm font-medium text-gray-700">
+                        <span class="flex items-center gap-1 md:gap-2">
+                            <span class="text-sm md:text-base">🏦</span>
                             Akun
                         </span>
                     </label>
@@ -170,10 +172,10 @@
                 </div>
 
                 <!-- Category Filter -->
-                <div class="space-y-2" v-if="showCategoryFilter && categories.length">
-                    <label class="block text-sm font-medium text-gray-700">
-                        <span class="flex items-center gap-2">
-                            <span>📁</span>
+                <div class="space-y-1 md:space-y-2" v-if="showCategoryFilter && categories.length">
+                    <label class="block text-xs md:text-sm font-medium text-gray-700">
+                        <span class="flex items-center gap-1 md:gap-2">
+                            <span class="text-sm md:text-base">📁</span>
                             Kategori
                         </span>
                     </label>
@@ -186,10 +188,10 @@
                 </div>
 
                 <!-- User Filter -->
-                <div class="space-y-2" v-if="showUserFilter">
-                    <label class="block text-sm font-medium text-gray-700">
-                        <span class="flex items-center gap-2">
-                            <span>👤</span>
+                <div class="space-y-1 md:space-y-2" v-if="showUserFilter">
+                    <label class="block text-xs md:text-sm font-medium text-gray-700">
+                        <span class="flex items-center gap-1 md:gap-2">
+                            <span class="text-sm md:text-base">👤</span>
                             Dicatat Oleh
                         </span>
                     </label>
@@ -203,11 +205,11 @@
             </div>
 
             <!-- 🎯 SECTION 3: STATUS FILTER (jika ada) -->
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4" v-if="showStatusFilter">
-                <div class="space-y-2">
-                    <label class="block text-sm font-medium text-gray-700">
-                        <span class="flex items-center gap-2">
-                            <span>🟢</span>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4" v-if="showStatusFilter">
+                <div class="space-y-1 md:space-y-2">
+                    <label class="block text-xs md:text-sm font-medium text-gray-700">
+                        <span class="flex items-center gap-1 md:gap-2">
+                            <span class="text-sm md:text-base">🟢</span>
                             Status
                         </span>
                     </label>
@@ -221,18 +223,18 @@
             </div>
 
             <!-- 🎯 SECTION 4: ACTIVE FILTERS BADGES -->
-            <div v-if="hasActiveFilters" class="pt-4 border-t border-gray-200">
-                <div class="flex items-center gap-2 mb-3">
-                    <span class="text-sm font-medium text-gray-700 flex items-center gap-2">
-                        <span>🎯</span>
+            <div v-if="hasActiveFilters" class="pt-3 md:pt-4 border-t border-gray-200">
+                <div class="flex items-center gap-1 md:gap-2 mb-2 md:mb-3">
+                    <span class="text-xs md:text-sm font-medium text-gray-700 flex items-center gap-1 md:gap-2">
+                        <span class="text-sm md:text-base">🎯</span>
                         Filter Aktif:
                     </span>
                 </div>
-                <div class="flex flex-wrap gap-2">
+                <div class="flex flex-wrap gap-1 md:gap-2">
                     <span
                         v-for="filter in activeFilterBadges"
                         :key="filter.key"
-                        class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-medium bg-gradient-to-r from-blue-50 to-blue-100 border border-blue-200 text-blue-800 shadow-sm"
+                        class="inline-flex items-center gap-1 md:gap-2 px-2 md:px-3 py-1 md:py-1.5 rounded-full text-xs font-medium bg-gradient-to-r from-blue-50 to-blue-100 border border-blue-200 text-blue-800 shadow-sm"
                     >
                         <span class="text-xs">{{ filter.label }}</span>
                         <button
@@ -248,7 +250,7 @@
 
             <!-- 🎯 SECTION 5: QUICK ACTIONS -->
             <div class="flex justify-between items-center pt-2">
-                <div class="text-sm text-gray-500">
+                <div class="text-xs md:text-sm text-gray-500">
                     <span v-if="hasActiveFilters" class="text-blue-600 font-medium">
                         🔍 {{ activeFilterBadges.length }} filter aktif
                     </span>
@@ -257,30 +259,31 @@
                     </span>
                 </div>
                 
-                <div class="flex gap-2">
+                <div class="flex gap-1 md:gap-2">
                     <BaseButton
                         @click="resetFilters"
                         variant="outline"
-                        size="sm"
+                        size="xs"
                         :disabled="!hasActiveFilters"
+                        class="text-xs"
                     >
                         <template #icon>🗑️</template>
-                        Hapus Semua Filter
+                        Hapus Semua
                     </BaseButton>
                 </div>
             </div>
         </div>
 
         <!-- 🎯 COLLAPSED FILTER SUMMARY -->
-        <div v-else class="text-center py-2">
-            <div class="inline-flex items-center gap-2 px-4 py-2 bg-gray-50 rounded-full">
-                <span class="text-sm text-gray-600">
+        <div v-else class="text-center py-1 md:py-2">
+            <div class="inline-flex items-center gap-1 md:gap-2 px-3 md:px-4 py-1.5 md:py-2 bg-gray-50 rounded-full">
+                <span class="text-xs md:text-sm text-gray-600">
                     <span v-if="hasActiveFilters" class="font-medium text-blue-600">
-                        🔍 {{ activeFilterBadges.length }} filter aktif - 
+                        🔍 {{ activeFilterBadges.length }} filter - 
                         <span class="text-gray-500">{{ filterSummaryShort }}</span>
                     </span>
                     <span v-else class="text-gray-500">
-                        Klik "Tampilkan Filter" untuk menyaring data
+                        Klik untuk menyaring data
                     </span>
                 </span>
             </div>
