@@ -21,6 +21,10 @@ const loadingAccounts = ref(false)
 const adding = ref(false)
 const purchasing = ref(false)
 const deleting = ref(false)
+
+// Modal states
+const showSavingsModal = ref(false)
+const showPurchaseModal = ref(false)
 const showDeleteModal = ref(false)
 const paymentToDelete = ref(null)
 
@@ -75,7 +79,6 @@ const accountOptions = computed(() => {
   return accounts.value.map(account => ({
     value: account.id,
     label: `${account.name} - ${account.formatted_balance}${account.type === 'joint' ? ' 👥' : ' 👤'}`,
-    // Optional: tambahkan metadata untuk styling khusus
     metadata: {
       type: account.type,
       balance: account.current_balance,
@@ -147,6 +150,10 @@ const isValidPurchase = computed(() => {
          purchaseForm.value.transaction_date
 })
 
+const remainingAmount = computed(() => {
+  return props.projectItem.planned_amount - props.projectItem.actual_spent
+})
+
 // Methods
 const loadPayments = async () => {
   try {
@@ -155,36 +162,51 @@ const loadPayments = async () => {
     }))
     if (response.data.success) {
       payments.value = response.data.payments
-      Object.assign(props.projectItem, response.data.project_item) // ⬅️ penting
+      Object.assign(props.projectItem, response.data.project_item)
     }
   } catch (error) {
     console.error('Error loading payments:', error)
   }
 }
 
-// Load accounts dari API
 const loadAccounts = async () => {
   loadingAccounts.value = true
   try {
-    // Coba panggil route khusus project payments dulu
     const response = await axios.get(route('project-items.api.accounts'))
     accounts.value = response.data
     console.log('Accounts loaded from project API:', accounts.value)
   } catch (error) {
     console.error('Error loading accounts from project API:', error)
-    // Fallback ke API umum
     try {
       const fallbackResponse = await axios.get('/api/accounts')
       accounts.value = fallbackResponse.data
       console.log('Accounts loaded from fallback API:', accounts.value)
     } catch (fallbackError) {
       console.error('Fallback also failed:', fallbackError)
-      // Tampilkan error message
       alert('Gagal memuat data akun. Silakan refresh halaman.')
     }
   } finally {
     loadingAccounts.value = false
   }
+}
+
+// Modal methods
+const openSavingsModal = () => {
+  showSavingsModal.value = true
+}
+
+const openPurchaseModal = () => {
+  showPurchaseModal.value = true
+}
+
+const closeSavingsModal = () => {
+  showSavingsModal.value = false
+  resetSavingsForm()
+}
+
+const closePurchaseModal = () => {
+  showPurchaseModal.value = false
+  resetPurchaseForm()
 }
 
 const addSavings = async () => {
@@ -199,6 +221,7 @@ const addSavings = async () => {
       payments.value.unshift(response.data.payment)
       Object.assign(props.projectItem, response.data.project_item)
       resetSavingsForm()
+      showSavingsModal.value = false
       emits('payment-updated')
     }
   } catch (error) {
@@ -221,6 +244,7 @@ const makePurchase = async () => {
       payments.value.unshift(response.data.payment)
       Object.assign(props.projectItem, response.data.project_item)
       resetPurchaseForm()
+      showPurchaseModal.value = false
       emits('payment-updated')
     }
   } catch (error) {
@@ -248,7 +272,6 @@ const confirmDelete = async () => {
     
     if (response.data.success) {
       payments.value = payments.value.filter(p => p.id !== paymentToDelete.value.id)
-      // Reload project item data
       await loadPayments()
       emits('payment-updated')
     }
@@ -315,13 +338,6 @@ const formatPaymentMethod = (method) => {
   return methods[method] || method
 }
 
-// Computed properties
-const remainingAmount = computed(() => {
-    return props.projectItem.planned_amount - props.projectItem.actual_spent
-})
-
-
-
 // Lifecycle
 onMounted(() => {
   loadPayments()
@@ -348,39 +364,39 @@ onMounted(() => {
 
       <!-- Progress Info -->
       <div class="flex items-center gap-2 md:gap-4">
-          <div class="text-right">
-              <!-- Tampilkan informasi sisa/kurang -->
-              <div v-if="projectItem.status === 'complete'" class="space-y-1">
-                  <div v-if="projectItem.actual_spent > 0" class="text-xs text-green-600 font-medium">
-                      💰 Sisa: {{ formatCurrency(projectItem.actual_spent) }}
-                  </div>
-                  <div v-else-if="projectItem.actual_spent < 0" class="text-xs text-red-600 font-medium">
-                      ⚠️ Kurang: {{ formatCurrency(Math.abs(projectItem.actual_spent)) }}
-                  </div>
-                  <div v-else class="text-xs text-gray-500">
-                      ✅ Terpakai semua
-                  </div>
-              </div>
-              <div v-else>
-                <div class="text-xs md:text-sm font-semibold text-gray-700 mb-1">
-                  {{ formatCurrency(projectItem.actual_spent) }} / {{ formatCurrency(projectItem.planned_amount) }}
-              </div>
-                  <!-- Progress bar hanya untuk status selain complete -->
-                  <div class="w-24 md:w-32 bg-gray-200 rounded-full h-1.5 md:h-2">
-                      <div class="h-1.5 md:h-2 rounded-full transition-all duration-500"
-                          :class="progressBarClass"
-                          :style="{ width: Math.min(projectItem.savings_progress, 100) + '%' }"></div>
-                  </div>
-                  <div class="text-xs text-gray-500 mt-1">
-                      {{ Math.round(projectItem.savings_progress) }}% tercapai
-                  </div>
-              </div>
+        <div class="text-right">
+          <!-- Tampilkan informasi sisa/kurang -->
+          <div v-if="projectItem.status === 'complete'" class="space-y-1">
+            <div v-if="projectItem.actual_spent > 0" class="text-xs text-green-600 font-medium">
+              💰 Sisa: {{ formatCurrency(projectItem.actual_spent) }}
+            </div>
+            <div v-else-if="projectItem.actual_spent < 0" class="text-xs text-red-600 font-medium">
+              ⚠️ Kurang: {{ formatCurrency(Math.abs(projectItem.actual_spent)) }}
+            </div>
+            <div v-else class="text-xs text-gray-500">
+              ✅ Terpakai semua
+            </div>
           </div>
-          
-          <!-- Status Badge -->
-          <div :class="statusClass" class="px-2 py-1 md:px-3 md:py-1 rounded-full text-xs md:text-sm font-semibold">
-              {{ statusText }}
+          <div v-else>
+            <div class="text-xs md:text-sm font-semibold text-gray-700 mb-1">
+              {{ formatCurrency(projectItem.actual_spent) }} / {{ formatCurrency(projectItem.planned_amount) }}
+            </div>
+            <!-- Progress bar hanya untuk status selain complete -->
+            <div class="w-24 md:w-32 bg-gray-200 rounded-full h-1.5 md:h-2">
+              <div class="h-1.5 md:h-2 rounded-full transition-all duration-500"
+                  :class="progressBarClass"
+                  :style="{ width: Math.min(projectItem.savings_progress, 100) + '%' }"></div>
+            </div>
+            <div class="text-xs text-gray-500 mt-1">
+              {{ Math.round(projectItem.savings_progress) }}% tercapai
+            </div>
           </div>
+        </div>
+        
+        <!-- Status Badge -->
+        <div :class="statusClass" class="px-2 py-1 md:px-3 md:py-1 rounded-full text-xs md:text-sm font-semibold">
+          {{ statusText }}
+        </div>
       </div>
     </div>
 
@@ -392,168 +408,45 @@ onMounted(() => {
       </div>
     </div>
 
-    <!-- Savings Form (Tampil jika belum ready) -->
+    <!-- Savings Card (Tampil jika belum ready) -->
     <div v-if="!projectItem.is_ready_for_purchase && projectItem.status !== 'complete' && !loadingAccounts" class="mb-3 md:mb-4">
-      <div class="bg-white/70 backdrop-blur-sm border border-green-100 rounded-xl md:rounded-2xl p-3 md:p-4">
-        <h4 class="font-semibold text-gray-800 mb-3 md:mb-4 flex items-center gap-2">
-          <span class="text-base md:text-lg">💰</span> 
-          <span class="text-sm md:text-base">Tambah Tabungan</span>
-        </h4>
-        
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-2 mb-3 md:mb-4">
-          <!-- Amount -->
-          <AccountInput
-            v-model="savingsForm.amount"
-            label="Jumlah Tabungan *"
-            :placeholder="`Contoh: ${Math.round(projectItem.remaining_amount / 1000) * 1000}`"
-            icon="💰"
-            account-type="account_number"
-            :max="projectItem.remaining_amount"
-            :error="savingsErrors.amount"
-            required
-          />
-
-          <!-- Account Selection -->
-          <SelectInput
-            v-model="savingsForm.account_id"
-            label="Akun Tujuan *"
-            :placeholder="accountOptions.length > 0 ? 'Pilih akun untuk menabung' : 'Memuat akun...'"
-            :options="accountOptions"
-            :error="savingsErrors.account_id"
-            icon="🏦"
-            :disabled="accountOptions.length === 0"
-            required
-          />
-
-          <!-- Payment Method -->
-          <SelectInput
-            v-model="savingsForm.payment_method"
-            label="Metode Pembayaran *"
-            :options="paymentMethodOptions"
-            :error="savingsErrors.payment_method"
-            icon="💳"
-            required
-          />
-
-          <!-- Transaction Date -->
-          <DateInput
-            v-model="savingsForm.transaction_date"
-            label="Tanggal Transaksi *"
-            icon="📅"
-            :error="savingsErrors.transaction_date"
-            required
-          />
-        </div>
-
-        <!-- Note -->
-        <TextAreaInput
-          v-model="savingsForm.note"
-          label="Catatan (Opsional)"
-          placeholder="Contoh: Tabungan gaji bulanan, Bonus, dll..."
-          icon="📝"
-          :rows="2"
-          :show-counter="true"
-          :max-length="255"
-        />
-
-        <!-- Actions -->
-        <div class="flex justify-end mt-3 md:mt-4">
-          <BaseButton
-            @click="addSavings"
-            :loading="adding"
-            :disabled="!isValidSavings || accountOptions.length === 0"
-            class="!px-4 !py-2 md:!px-6 md:!py-3 text-xs md:text-sm bg-gradient-to-r from-green-400 to-emerald-500 text-white shadow-md hover:shadow-lg"
-          >
-            <template #icon>💰</template>
-            <span class="hidden xs:inline">Simpan Tabungan</span>
-          </BaseButton>
-        </div>
-      </div>
-    </div>
-
-    <!-- Purchase Form (Tampil jika ready) -->
-    <div v-if="projectItem.is_ready_for_purchase && projectItem.status !== 'complete' && !loadingAccounts" class="mb-4 md:mb-6">
-      <div class="bg-white/70 backdrop-blur-sm border border-orange-100 rounded-xl md:rounded-2xl p-3 md:p-4">
-        <h4 class="font-semibold text-gray-800 mb-3 md:mb-4 flex items-center gap-2">
-          <span class="text-base md:text-lg">🛍️</span>
-          <span class="text-sm md:text-base">Pembelian Item</span>
-        </h4>
+      <div class="bg-white/70 backdrop-blur-sm border border-green-100 rounded-xl md:rounded-2xl p-3 md:p-4 text-center">
+        <div class="text-3xl md:text-4xl mb-2 md:mb-4">💰</div>
+        <h4 class="text-lg md:text-xl font-bold text-gray-800 mb-1 md:mb-2">Tambah Tabungan</h4>
         <p class="text-xs md:text-sm text-gray-600 mb-3 md:mb-4">
-          Tabungan sudah mencukupi! Silakan lakukan pembelian untuk item <strong>{{ projectItem.item_name }}</strong>.
+          Kumpulkan tabungan untuk item <strong>{{ projectItem.item_name }}</strong>
         </p>
-        
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-2 mb-3 md:mb-4">
-          <!-- Amount -->
-          <AccountInput
-            v-model="purchaseForm.amount"
-            label="Jumlah Pembelian *"
-            :placeholder="`Maksimal: ${formatCurrency(projectItem.actual_spent)}`"
-            icon="💰"
-            account-type="account_number"
-            :max="projectItem.actual_spent"
-            :error="purchaseErrors.amount"
-            required
-          />
-
-          <!-- Account Selection -->
-          <SelectInput
-            v-model="purchaseForm.account_id"
-            label="Akun Sumber *"
-            :placeholder="accountOptions.length > 0 ? 'Pilih akun untuk pembelian' : 'Memuat akun...'"
-            :options="accountOptions"
-            :error="purchaseErrors.account_id"
-            icon="🏦"
-            :disabled="accountOptions.length === 0"
-            required
-          />
-
-          <!-- Payment Method -->
-          <SelectInput
-            v-model="purchaseForm.payment_method"
-            label="Metode Pembayaran *"
-            :options="paymentMethodOptions"
-            :error="purchaseErrors.payment_method"
-            icon="💳"
-            required
-          />
-
-          <!-- Transaction Date -->
-          <DateInput
-            v-model="purchaseForm.transaction_date"
-            label="Tanggal Pembelian *"
-            icon="📅"
-            :error="purchaseErrors.transaction_date"
-            required
-          />
-        </div>
-
-        <!-- Note -->
-        <TextAreaInput
-          v-model="purchaseForm.note"
-          label="Catatan Pembelian"
-          placeholder="Contoh: Beli material, Bayar vendor, dll..."
-          icon="📝"
-          :rows="2"
-          :show-counter="true"
-          :max-length="255"
-        />
-
-        <!-- Actions -->
-        <div class="flex justify-end mt-3 md:mt-4">
-          <BaseButton
-            @click="makePurchase"
-            :loading="purchasing"
-            :disabled="!isValidPurchase || accountOptions.length === 0"
-            class="!px-4 !py-2 md:!px-6 md:!py-3 text-xs md:text-sm bg-gradient-to-r from-orange-400 to-red-500 text-white shadow-md hover:shadow-lg"
-          >
-            <template #icon>🛍️</template>
-            <span class="hidden xs:inline">Proses Pembelian</span>
-          </BaseButton>
-        </div>
+        <BaseButton
+          @click="openSavingsModal"
+          :disabled="accountOptions.length === 0"
+          class="!px-4 !py-2 md:!px-6 md:!py-3 text-xs md:text-sm bg-gradient-to-r from-green-400 to-emerald-500 text-white shadow-md hover:shadow-lg"
+        >
+          <template #icon>💰</template>
+          Tambah Tabungan
+        </BaseButton>
       </div>
     </div>
 
-    <!-- complete State -->
+    <!-- Purchase Card (Tampil jika ready) -->
+    <div v-if="projectItem.is_ready_for_purchase && projectItem.status !== 'complete' && !loadingAccounts" class="mb-4 md:mb-6">
+      <div class="bg-white/70 backdrop-blur-sm border border-orange-100 rounded-xl md:rounded-2xl p-3 md:p-4 text-center">
+        <div class="text-3xl md:text-4xl mb-2 md:mb-4">🛍️</div>
+        <h4 class="text-lg md:text-xl font-bold text-gray-800 mb-1 md:mb-2">Pembelian Item</h4>
+        <p class="text-xs md:text-sm text-gray-600 mb-3 md:mb-4">
+          Tabungan sudah mencukupi! Silakan lakukan pembelian.
+        </p>
+        <BaseButton
+          @click="openPurchaseModal"
+          :disabled="accountOptions.length === 0"
+          class="!px-4 !py-2 md:!px-6 md:!py-3 text-xs md:text-sm bg-gradient-to-r from-orange-400 to-red-500 text-white shadow-md hover:shadow-lg"
+        >
+          <template #icon>🛍️</template>
+          Proses Pembelian
+        </BaseButton>
+      </div>
+    </div>
+
+    <!-- Complete State -->
     <div v-if="projectItem.status === 'complete'" class="mb-3 md:mb-4">
       <div class="bg-white/70 backdrop-blur-sm border border-green-100 rounded-xl md:rounded-2xl p-4 md:p-6 text-center">
         <div class="text-3xl md:text-4xl mb-2 md:mb-4">🎉</div>
@@ -647,7 +540,9 @@ onMounted(() => {
               <div class="opacity-0 group-hover:opacity-100 transition-opacity">
                 <BaseButton
                   @click="deletePayment(payment)"
-                  class="w-6 h-6 md:w-8 md:h-8 rounded-full flex items-center justify-center text-gray-500 hover:text-red-600 hover:bg-red-50 transition-colors text-xs"
+                  variant="danger"
+                  size="sm"
+                  class="!px-3 md:!px-4 text-xs md:text-sm"
                   title="Hapus transaksi"
                 >
                   🗑️
@@ -658,6 +553,170 @@ onMounted(() => {
         </div>
       </div>
     </div>
+
+    <!-- Modal untuk Tabungan -->
+    <BaseModal
+      v-model:show="showSavingsModal"
+      title="Tambah Tabungan"
+      description="Isi form untuk menambah tabungan proyek"
+      icon="💰"
+      confirm-text="Simpan Tabungan"
+      cancel-text="Batal"
+      confirm-variant="primary"
+      :confirm-loading="adding"
+      :confirm-disabled="!isValidSavings"
+      @confirm="addSavings"
+      @close="closeSavingsModal"
+      size="lg"
+    >
+      <div class="space-y-4">
+        <!-- Amount -->
+        <AccountInput
+          v-model="savingsForm.amount"
+          label="Jumlah Tabungan *"
+          :placeholder="`Contoh: ${Math.round(projectItem.remaining_amount / 1000) * 1000}`"
+          icon="💰"
+          account-type="account_number"
+          :max="projectItem.remaining_amount"
+          :error="savingsErrors.amount"
+          required
+        />
+
+        <!-- Account Selection -->
+        <SelectInput
+          v-model="savingsForm.account_id"
+          label="Akun Tujuan *"
+          :placeholder="accountOptions.length > 0 ? 'Pilih akun untuk menabung' : 'Memuat akun...'"
+          :options="accountOptions"
+          :error="savingsErrors.account_id"
+          icon="🏦"
+          :disabled="accountOptions.length === 0"
+          required
+        />
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <!-- Payment Method -->
+          <SelectInput
+            v-model="savingsForm.payment_method"
+            label="Metode Pembayaran *"
+            :options="paymentMethodOptions"
+            :error="savingsErrors.payment_method"
+            icon="💳"
+            required
+          />
+
+          <!-- Transaction Date -->
+          <DateInput
+            v-model="savingsForm.transaction_date"
+            label="Tanggal Transaksi *"
+            icon="📅"
+            :error="savingsErrors.transaction_date"
+            required
+          />
+        </div>
+
+        <!-- Note -->
+        <TextAreaInput
+          v-model="savingsForm.note"
+          label="Catatan (Opsional)"
+          placeholder="Contoh: Tabungan gaji bulanan, Bonus, dll..."
+          icon="📝"
+          :rows="2"
+          :show-counter="true"
+          :max-length="255"
+        />
+
+        <!-- Info Box -->
+        <div class="p-3 bg-blue-50 border border-blue-200 rounded-lg">
+          <p class="text-xs text-blue-700">
+            <strong>Info:</strong> Sisa tabungan yang dibutuhkan: 
+            <span class="font-bold">{{ formatCurrency(projectItem.remaining_amount) }}</span>
+          </p>
+        </div>
+      </div>
+    </BaseModal>
+
+    <!-- Modal untuk Pembelian -->
+    <BaseModal
+      v-model:show="showPurchaseModal"
+      title="Pembelian Item"
+      description="Lakukan pembelian untuk item proyek"
+      icon="🛍️"
+      confirm-text="Proses Pembelian"
+      cancel-text="Batal"
+      confirm-variant="primary"
+      :confirm-loading="purchasing"
+      :confirm-disabled="!isValidPurchase"
+      @confirm="makePurchase"
+      @close="closePurchaseModal"
+      size="lg"
+    >
+      <div class="space-y-4">
+        <!-- Amount -->
+        <AccountInput
+          v-model="purchaseForm.amount"
+          label="Jumlah Pembelian *"
+          :placeholder="`Maksimal: ${formatCurrency(projectItem.actual_spent)}`"
+          icon="💰"
+          account-type="account_number"
+          :max="projectItem.actual_spent"
+          :error="purchaseErrors.amount"
+          required
+        />
+
+        <!-- Account Selection -->
+        <SelectInput
+          v-model="purchaseForm.account_id"
+          label="Akun Sumber *"
+          :placeholder="accountOptions.length > 0 ? 'Pilih akun untuk pembelian' : 'Memuat akun...'"
+          :options="accountOptions"
+          :error="purchaseErrors.account_id"
+          icon="🏦"
+          :disabled="accountOptions.length === 0"
+          required
+        />
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <!-- Payment Method -->
+          <SelectInput
+            v-model="purchaseForm.payment_method"
+            label="Metode Pembayaran *"
+            :options="paymentMethodOptions"
+            :error="purchaseErrors.payment_method"
+            icon="💳"
+            required
+          />
+
+          <!-- Transaction Date -->
+          <DateInput
+            v-model="purchaseForm.transaction_date"
+            label="Tanggal Pembelian *"
+            icon="📅"
+            :error="purchaseErrors.transaction_date"
+            required
+          />
+        </div>
+
+        <!-- Note -->
+        <TextAreaInput
+          v-model="purchaseForm.note"
+          label="Catatan Pembelian"
+          placeholder="Contoh: Beli material, Bayar vendor, dll..."
+          icon="📝"
+          :rows="2"
+          :show-counter="true"
+          :max-length="255"
+        />
+
+        <!-- Info Box -->
+        <div class="p-3 bg-orange-50 border border-orange-200 rounded-lg">
+          <p class="text-xs text-orange-700">
+            <strong>Info:</strong> Total tabungan tersedia: 
+            <span class="font-bold">{{ formatCurrency(projectItem.actual_spent) }}</span>
+          </p>
+        </div>
+      </div>
+    </BaseModal>
 
     <!-- Delete Confirmation Modal -->
     <BaseModal

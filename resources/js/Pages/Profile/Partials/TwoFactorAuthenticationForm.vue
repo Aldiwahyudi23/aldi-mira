@@ -1,33 +1,60 @@
 <script setup>
 import { ref, computed, watch } from 'vue';
 import { router, useForm, usePage } from '@inertiajs/vue3';
-import ActionSection from '@/Components/ActionSection.vue';
-import ConfirmsPassword from '@/Components/ConfirmsPassword.vue';
-import DangerButton from '@/Components/DangerButton.vue';
-import InputError from '@/Components/InputError.vue';
-import InputLabel from '@/Components/InputLabel.vue';
-import PrimaryButton from '@/Components/PrimaryButton.vue';
-import SecondaryButton from '@/Components/SecondaryButton.vue';
-import TextInput from '@/Components/TextInput.vue';
+import BaseButton from '@/Components/Base/BaseButton.vue';
+import BaseModal from '@/Components/Base/BaseModal.vue';
+import TextInput from '@/Components/Form/TextInput.vue';
 
 const props = defineProps({
     requiresConfirmation: Boolean,
 });
 
 const page = usePage();
+const user = page.props.auth.user;
+
+// Parse theme dari user
+const userTheme = user?.theme ? JSON.parse(user.theme) : null
+
 const enabling = ref(false);
 const confirming = ref(false);
 const disabling = ref(false);
 const qrCode = ref(null);
 const setupKey = ref(null);
 const recoveryCodes = ref([]);
+const showRecoveryCodesModal = ref(false);
+const showQrModal = ref(false);
 
 const confirmationForm = useForm({
     code: '',
 });
 
+// Computed untuk mendapatkan class tombol berdasarkan theme
+const buttonClasses = computed(() => {
+  const buttonTheme = userTheme?.button
+  
+  // Jika ada setting tombol yang diisi, gunakan theme tersebut
+  if (buttonTheme?.from && buttonTheme?.to && buttonTheme?.shade_from && buttonTheme?.shade_to) {
+    const gradient = `bg-gradient-to-r from-${buttonTheme.from}-${buttonTheme.shade_from} to-${buttonTheme.to}-${buttonTheme.shade_to}`
+    const textColor = buttonTheme.text_color || 'text-white'
+    return `${gradient} ${textColor}`
+  }
+  
+  // Default: pink-300 to sky-300
+  return 'bg-gradient-to-r from-pink-300 to-sky-300 text-white'
+})
+
+// Computed untuk tombol secondary
+const secondaryButtonClasses = computed(() => {
+  return 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50'
+})
+
+// Computed untuk tombol danger
+const dangerButtonClasses = computed(() => {
+  return 'bg-gradient-to-r from-red-400 to-red-500 text-white hover:from-red-500 hover:to-red-600'
+})
+
 const twoFactorEnabled = computed(
-    () => ! enabling.value && page.props.auth.user?.two_factor_enabled,
+    () => ! enabling.value && user?.two_factor_enabled,
 );
 
 watch(twoFactorEnabled, () => {
@@ -50,6 +77,9 @@ const enableTwoFactorAuthentication = () => {
         onFinish: () => {
             enabling.value = false;
             confirming.value = props.requiresConfirmation;
+            if (confirming.value) {
+                showQrModal.value = true;
+            }
         },
     });
 };
@@ -81,6 +111,7 @@ const confirmTwoFactorAuthentication = () => {
             confirming.value = false;
             qrCode.value = null;
             setupKey.value = null;
+            showQrModal.value = false;
         },
     });
 };
@@ -88,7 +119,10 @@ const confirmTwoFactorAuthentication = () => {
 const regenerateRecoveryCodes = () => {
     axios
         .post(route('two-factor.recovery-codes'))
-        .then(() => showRecoveryCodes());
+        .then(() => {
+            showRecoveryCodes();
+            showRecoveryCodesModal.value = true;
+        });
 };
 
 const disableTwoFactorAuthentication = () => {
@@ -99,155 +133,309 @@ const disableTwoFactorAuthentication = () => {
         onSuccess: () => {
             disabling.value = false;
             confirming.value = false;
+            showQrModal.value = false;
+            showRecoveryCodesModal.value = false;
         },
     });
+};
+
+const openRecoveryCodes = () => {
+    showRecoveryCodesModal.value = true;
+};
+
+const closeQrModal = () => {
+    showQrModal.value = false;
+    if (confirming.value) {
+        disableTwoFactorAuthentication();
+    }
+};
+
+const closeRecoveryCodesModal = () => {
+    showRecoveryCodesModal.value = false;
 };
 </script>
 
 <template>
-    <ActionSection>
-        <template #title>
-            Autentikasi Dua Faktor
-        </template>
-
-        <template #description>
-            Tambahkan keamanan tambahan ke akun Anda menggunakan autentikasi dua faktor.
-        </template>
-
-        <template #content>
-            <h3 v-if="twoFactorEnabled && ! confirming" class="text-lg font-medium text-gray-900">
-                Anda telah mengaktifkan autentikasi dua faktor.
-            </h3>
-
-            <h3 v-else-if="twoFactorEnabled && confirming" class="text-lg font-medium text-gray-900">
-                Selesaikan pengaktifan autentikasi dua faktor.
-            </h3>
-
-            <h3 v-else class="text-lg font-medium text-gray-900">
-                Anda belum mengaktifkan autentikasi dua faktor.
-            </h3>
-
-            <div class="mt-3 max-w-xl text-sm text-gray-600">
-                <p>
-                    Ketika autentikasi dua faktor diaktifkan, Anda akan diminta untuk memasukkan token acak yang aman selama autentikasi. Anda dapat mengambil token ini dari aplikasi Google Authenticator di ponsel Anda.
+        <!-- Header Section -->
+        <div class="bg-gradient-to-r from-purple-500/10 to-indigo-500/10 py-4 md:py-6 px-3 md:px-4 border-b border-purple-100">
+            <div class="text-center">
+                <div class="inline-flex items-center justify-center w-12 h-12 md:w-16 md:h-16 bg-gradient-to-r from-purple-400 to-indigo-400 rounded-full mb-3 md:mb-4 shadow-lg">
+                    <span class="text-xl md:text-2xl text-white">🔐</span>
+                </div>
+                <h2 class="text-lg md:text-2xl font-bold text-gray-800 mb-2">Autentikasi Dua Faktor</h2>
+                <p class="text-gray-600 text-sm md:text-base flex items-center justify-center gap-1 md:gap-2">
+                    <span class="text-purple-400 text-sm md:text-base">🛡️</span>
+                    Tambahkan keamanan tambahan ke akun Anda menggunakan autentikasi dua faktor
                 </p>
             </div>
+        </div>
 
+        <!-- Content Section -->
+        <div class="p-3 md:p-4">
+            <!-- Status Information -->
+            <div class="mb-3 md:mb-4">
+                <h3 v-if="twoFactorEnabled && ! confirming" class="text-base md:text-lg font-semibold text-gray-800 flex items-center gap-2">
+                    <span class="text-green-500 text-lg md:text-xl">✅</span>
+                    Anda telah mengaktifkan autentikasi dua faktor.
+                </h3>
+
+                <h3 v-else-if="twoFactorEnabled && confirming" class="text-base md:text-lg font-semibold text-gray-800 flex items-center gap-2">
+                    <span class="text-amber-500 text-lg md:text-xl">⏳</span>
+                    Selesaikan pengaktifan autentikasi dua faktor.
+                </h3>
+
+                <h3 v-else class="text-base md:text-lg font-semibold text-gray-800 flex items-center gap-2">
+                    <span class="text-gray-500 text-lg md:text-xl">🔒</span>
+                    Anda belum mengaktifkan autentikasi dua faktor.
+                </h3>
+
+                <div class="mt-2 text-xs md:text-sm text-gray-600">
+                    <p class="flex items-start gap-2">
+                        <span class="text-purple-400 mt-0.5">💡</span>
+                        <span>
+                            Ketika autentikasi dua faktor diaktifkan, Anda akan diminta untuk memasukkan token acak yang aman selama autentikasi. Anda dapat mengambil token ini dari aplikasi Google Authenticator di ponsel Anda.
+                        </span>
+                    </p>
+                </div>
+            </div>
+
+            <!-- Two Factor Content -->
             <div v-if="twoFactorEnabled">
-                <div v-if="qrCode">
-                    <div class="mt-4 max-w-xl text-sm text-gray-600">
-                        <p v-if="confirming" class="font-semibold">
-                            Untuk menyelesaikan pengaktifan autentikasi dua faktor, pindai kode QR berikut menggunakan aplikasi autentikator di ponsel Anda atau masukkan kunci setup dan berikan kode OTP yang dihasilkan.
+                <!-- QR Code and Setup Information -->
+                <div v-if="qrCode" class="space-y-3 md:space-y-4">
+                    <div class="p-3 md:p-4 bg-gradient-to-r from-blue-50 to-cyan-50 rounded-xl md:rounded-2xl border border-blue-200">
+                        <p v-if="confirming" class="text-sm md:text-base text-gray-700 font-medium flex items-start gap-2">
+                            <span class="text-blue-500 text-lg mt-0.5">📱</span>
+                            <span>Untuk menyelesaikan pengaktifan autentikasi dua faktor, pindai kode QR berikut menggunakan aplikasi autentikator di ponsel Anda atau masukkan kunci setup dan berikan kode OTP yang dihasilkan.</span>
                         </p>
 
-                        <p v-else>
-                            Autentikasi dua faktor sekarang telah diaktifkan. Pindai kode QR berikut menggunakan aplikasi autentikator di ponsel Anda atau masukkan kunci setup.
-                        </p>
-                    </div>
-
-                    <div class="mt-4 p-2 inline-block bg-white" v-html="qrCode" />
-
-                    <div v-if="setupKey" class="mt-4 max-w-xl text-sm text-gray-600">
-                        <p class="font-semibold">
-                            Kunci Setup: <span class="font-mono">{{ setupKey }}</span>
+                        <p v-else class="text-sm md:text-base text-gray-700 font-medium flex items-start gap-2">
+                            <span class="text-blue-500 text-lg mt-0.5">✅</span>
+                            <span>Autentikasi dua faktor sekarang telah diaktifkan. Pindai kode QR berikut menggunakan aplikasi autentikator di ponsel Anda atau masukkan kunci setup.</span>
                         </p>
                     </div>
 
-                    <div v-if="confirming" class="mt-4">
-                        <InputLabel for="code" value="Kode" />
+                    <!-- QR Code -->
+                    <div class="text-center">
+                        <div class="inline-block p-3 md:p-4 bg-white rounded-xl md:rounded-2xl border border-gray-200 shadow-lg">
+                            <div v-html="qrCode" class="max-w-[200px] md:max-w-[250px] mx-auto" />
+                        </div>
+                    </div>
 
+                    <!-- Setup Key -->
+                    <div v-if="setupKey" class="p-3 md:p-4 bg-gradient-to-r from-green-50 to-emerald-50 rounded-xl md:rounded-2xl border border-green-200">
+                        <p class="text-sm md:text-base text-gray-700 font-medium mb-2 flex items-center gap-2">
+                            <span class="text-green-500">🔑</span>
+                            Kunci Setup:
+                        </p>
+                        <div class="bg-white/80 p-3 md:p-4 rounded-lg md:rounded-xl border border-gray-200">
+                            <code class="text-xs md:text-sm font-mono text-gray-800 break-all">{{ setupKey }}</code>
+                        </div>
+                    </div>
+
+                    <!-- Confirmation Code Input -->
+                    <div v-if="confirming" class="space-y-2 md:space-y-3">
                         <TextInput
-                            id="code"
                             v-model="confirmationForm.code"
-                            type="text"
-                            name="code"
-                            class="block mt-1 w-1/2"
+                            label="Kode Verifikasi"
+                            placeholder="Masukkan kode 6 digit dari aplikasi"
+                            :error="confirmationForm.errors.code"
+                            icon="🔢"
+                            required
                             inputmode="numeric"
                             autofocus
                             autocomplete="one-time-code"
                             @keyup.enter="confirmTwoFactorAuthentication"
+                            class="max-w-xs mx-auto"
                         />
-
-                        <InputError :message="confirmationForm.errors.code" class="mt-2" />
                     </div>
                 </div>
 
-                <div v-if="recoveryCodes.length > 0 && ! confirming">
-                    <div class="mt-4 max-w-xl text-sm text-gray-600">
-                        <p class="font-semibold">
-                            Simpan kode pemulihan ini di pengelola kata sandi yang aman. Mereka dapat digunakan untuk memulihkan akses ke akun Anda jika perangkat autentikasi dua faktor hilang.
+                <!-- Recovery Codes -->
+                <div v-if="recoveryCodes.length > 0 && ! confirming" class="mt-3 md:mt-4">
+                    <div class="p-3 md:p-4 bg-gradient-to-r from-amber-50 to-orange-50 rounded-xl md:rounded-2xl border border-amber-200">
+                        <p class="text-sm md:text-base text-gray-700 font-medium flex items-start gap-2">
+                            <span class="text-amber-500 text-lg mt-0.5">💾</span>
+                            <span>Simpan kode pemulihan ini di pengelola kata sandi yang aman. Mereka dapat digunakan untuk memulihkan akses ke akun Anda jika perangkat autentikasi dua faktor hilang.</span>
                         </p>
                     </div>
-
-                    <div class="grid gap-1 max-w-xl mt-4 px-4 py-4 font-mono text-sm bg-gray-100 rounded-lg">
-                        <div v-for="code in recoveryCodes" :key="code">
-                            {{ code }}
-                        </div>
-                    </div>
                 </div>
             </div>
 
-            <div class="mt-5">
-                <div v-if="! twoFactorEnabled">
-                    <ConfirmsPassword @confirmed="enableTwoFactorAuthentication">
-                        <PrimaryButton type="button" :class="{ 'opacity-25': enabling }" :disabled="enabling">
-                            Aktifkan
-                        </PrimaryButton>
-                    </ConfirmsPassword>
+            <!-- Action Buttons -->
+            <div class="flex flex-col sm:flex-row gap-2 md:gap-3 mt-4 md:mt-5 pt-3 md:pt-4 border-t border-gray-100">
+                <div v-if="! twoFactorEnabled" class="flex-1">
+                    <BaseButton
+                        @click="enableTwoFactorAuthentication"
+                        :loading="enabling"
+                        :class="buttonClasses"
+                        class="w-full justify-center"
+                    >
+                        <template #icon>🔐</template>
+                        Aktifkan 2FA
+                    </BaseButton>
                 </div>
 
-                <div v-else>
-                    <ConfirmsPassword @confirmed="confirmTwoFactorAuthentication">
-                        <PrimaryButton
-                            v-if="confirming"
-                            type="button"
-                            class="me-3"
-                            :class="{ 'opacity-25': enabling || confirmationForm.processing }"
-                            :disabled="enabling || confirmationForm.processing"
-                        >
-                            Konfirmasi
-                        </PrimaryButton>
-                    </ConfirmsPassword>
+                <div v-else class="flex flex-col sm:flex-row gap-2 md:gap-3 w-full">
+                    <BaseButton
+                        v-if="confirming"
+                        @click="confirmTwoFactorAuthentication"
+                        :loading="confirmationForm.processing"
+                        :class="buttonClasses"
+                        class="flex-1 justify-center"
+                    >
+                        <template #icon>✅</template>
+                        Konfirmasi
+                    </BaseButton>
 
-                    <ConfirmsPassword @confirmed="regenerateRecoveryCodes">
-                        <SecondaryButton
-                            v-if="recoveryCodes.length > 0 && ! confirming"
-                            class="me-3"
-                        >
-                            Regenerasi Kode Pemulihan
-                        </SecondaryButton>
-                    </ConfirmsPassword>
+                    <BaseButton
+                        v-if="recoveryCodes.length > 0 && ! confirming"
+                        @click="regenerateRecoveryCodes"
+                        variant="secondary"
+                        class="flex-1 justify-center"
+                    >
+                        <template #icon>🔄</template>
+                        Regenerasi Kode
+                    </BaseButton>
 
-                    <ConfirmsPassword @confirmed="showRecoveryCodes">
-                        <SecondaryButton
-                            v-if="recoveryCodes.length === 0 && ! confirming"
-                            class="me-3"
-                        >
-                            Tampilkan Kode Pemulihan
-                        </SecondaryButton>
-                    </ConfirmsPassword>
+                    <BaseButton
+                        v-if="recoveryCodes.length === 0 && ! confirming"
+                        @click="openRecoveryCodes"
+                        variant="secondary"
+                        class="flex-1 justify-center"
+                    >
+                        <template #icon>👁️</template>
+                        Lihat Kode
+                    </BaseButton>
 
-                    <ConfirmsPassword @confirmed="disableTwoFactorAuthentication">
-                        <SecondaryButton
-                            v-if="confirming"
-                            :class="{ 'opacity-25': disabling }"
-                            :disabled="disabling"
-                        >
-                            Batal
-                        </SecondaryButton>
-                    </ConfirmsPassword>
+                    <BaseButton
+                        v-if="confirming"
+                        @click="closeQrModal"
+                        variant="secondary"
+                        class="flex-1 justify-center"
+                    >
+                        <template #icon>↩️</template>
+                        Batal
+                    </BaseButton>
 
-                    <ConfirmsPassword @confirmed="disableTwoFactorAuthentication">
-                        <DangerButton
-                            v-if="! confirming"
-                            :class="{ 'opacity-25': disabling }"
-                            :disabled="disabling"
-                        >
-                            Nonaktifkan
-                        </DangerButton>
-                    </ConfirmsPassword>
+                    <BaseButton
+                        v-if="! confirming"
+                        @click="disableTwoFactorAuthentication"
+                        :loading="disabling"
+                        variant="danger"
+                        class="flex-1 justify-center"
+                    >
+                        <template #icon>🚫</template>
+                        Nonaktifkan
+                    </BaseButton>
                 </div>
             </div>
-        </template>
-    </ActionSection>
+        </div>
+
+    <!-- QR Code Modal -->
+    <BaseModal
+        v-model:show="showQrModal"
+        :title="'Setup Autentikasi Dua Faktor'"
+        :description="'Scan QR code dan masukkan kode verifikasi untuk mengaktifkan 2FA'"
+        :icon="'📱'"
+        :confirm-text="'Konfirmasi'"
+        :confirm-loading="confirmationForm.processing"
+        :show-cancel="true"
+        :cancel-text="'Batal'"
+        @confirm="confirmTwoFactorAuthentication"
+        @close="closeQrModal"
+        size="md"
+    >
+        <div class="space-y-4 md:space-y-6">
+            <!-- QR Code -->
+            <div class="text-center">
+                <div class="inline-block p-4 bg-white rounded-2xl border border-gray-200 shadow-lg">
+                    <div v-html="qrCode" class="max-w-[200px] md:max-w-[250px] mx-auto" />
+                </div>
+            </div>
+
+            <!-- Setup Key -->
+            <div v-if="setupKey" class="p-3 md:p-4 bg-gradient-to-r from-green-50 to-emerald-50 rounded-xl md:rounded-2xl border border-green-200">
+                <p class="text-sm md:text-base text-gray-700 font-medium mb-2 flex items-center gap-2">
+                    <span class="text-green-500">🔑</span>
+                    Kunci Setup:
+                </p>
+                <div class="bg-white/80 p-3 md:p-4 rounded-lg md:rounded-xl border border-gray-200">
+                    <code class="text-xs md:text-sm font-mono text-gray-800 break-all">{{ setupKey }}</code>
+                </div>
+            </div>
+
+            <!-- Confirmation Code Input -->
+            <TextInput
+                v-model="confirmationForm.code"
+                label="Kode Verifikasi 2FA"
+                placeholder="Masukkan kode 6 digit dari aplikasi"
+                :error="confirmationForm.errors.code"
+                icon="🔢"
+                required
+                inputmode="numeric"
+                autofocus
+                autocomplete="one-time-code"
+                @keyup.enter="confirmTwoFactorAuthentication"
+            />
+
+            <div class="p-3 md:p-4 bg-gradient-to-r from-blue-50 to-cyan-50 rounded-xl md:rounded-2xl border border-blue-200">
+                <p class="text-xs md:text-sm text-gray-600 flex items-start gap-2">
+                    <span class="text-blue-500 text-base mt-0.5">💡</span>
+                    <span>Download aplikasi Google Authenticator atau Authy di smartphone Anda, scan QR code di atas, lalu masukkan kode 6 digit yang muncul di aplikasi.</span>
+                </p>
+            </div>
+        </div>
+    </BaseModal>
+
+    <!-- Recovery Codes Modal -->
+    <BaseModal
+        v-model:show="showRecoveryCodesModal"
+        :title="'Kode Pemulihan 2FA'"
+        :description="'Simpan kode-kode ini di tempat yang aman untuk memulihkan akses akun'"
+        :icon="'💾'"
+        :confirm-text="'Tutup'"
+        :show-cancel="false"
+        @confirm="closeRecoveryCodesModal"
+        size="md"
+    >
+        <div class="space-y-4 md:space-y-6">
+            <div class="p-3 md:p-4 bg-gradient-to-r from-amber-50 to-orange-50 rounded-xl md:rounded-2xl border border-amber-200">
+                <p class="text-sm md:text-base text-gray-700 font-medium flex items-start gap-2">
+                    <span class="text-amber-500 text-lg mt-0.5">⚠️</span>
+                    <span>Simpan kode pemulihan ini di pengelola kata sandi yang aman. Mereka dapat digunakan untuk memulihkan akses ke akun Anda jika perangkat autentikasi dua faktor hilang.</span>
+                </p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-2 md:gap-3 max-h-60 overflow-y-auto p-2">
+                <div 
+                    v-for="(code, index) in recoveryCodes" 
+                    :key="index"
+                    class="p-2 md:p-3 bg-white rounded-lg md:rounded-xl border border-gray-200 text-center font-mono text-xs md:text-sm text-gray-800 break-all"
+                >
+                    {{ code }}
+                </div>
+            </div>
+
+            <div class="flex gap-2 md:gap-3">
+                <BaseButton
+                    @click="regenerateRecoveryCodes"
+                    variant="secondary"
+                    class="flex-1 justify-center"
+                >
+                    <template #icon>🔄</template>
+                    Regenerasi
+                </BaseButton>
+                
+                <BaseButton
+                    @click="closeRecoveryCodesModal"
+                    :class="buttonClasses"
+                    class="flex-1 justify-center"
+                >
+                    <template #icon>✅</template>
+                    Tutup
+                </BaseButton>
+            </div>
+        </div>
+    </BaseModal>
 </template>

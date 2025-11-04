@@ -21,14 +21,38 @@ class TransactionController extends Controller
      */
     public function index()
     {
+        $user =Auth::user();
+        
         $transactions = Transaction::with(['user', 'account', 'category'])
+            ->where(function ($query) use ($user) {
+                // Transaksi milik user yang login
+                $query->where('user_id', $user->id);
+                
+                // ATAU transaksi dari category joint yang dimiliki oleh user dengan family_id yang sama
+                $query->orWhereHas('category', function ($categoryQuery) use ($user) {
+                    $categoryQuery->where('type', 'joint')
+                        ->whereHas('user', function ($userQuery) use ($user) {
+                            $userQuery->where('family_id', $user->family_id)
+                                    ->where('id', '!=', $user->id); // Exclude current user
+                        });
+                });
+                
+                // ATAU transaksi dari account joint yang dimiliki oleh user dengan family_id yang sama
+                $query->orWhereHas('account', function ($accountQuery) use ($user) {
+                    $accountQuery->where('type', 'joint')
+                        ->whereHas('user', function ($userQuery) use ($user) {
+                            $userQuery->where('family_id', $user->family_id)
+                                    ->where('id', '!=', $user->id); // Exclude current user
+                        });
+                });
+            })
             ->orderBy('transaction_date', 'desc')
             ->orderBy('created_at', 'desc')
             ->get();
 
-            if (request()->wantsJson()) {
-                return response()->json($transactions);
-            }   
+        if (request()->wantsJson()) {
+            return response()->json($transactions);
+        }   
         
         return Inertia::render('Transaksi/Index', [
             'transactions' => $transactions

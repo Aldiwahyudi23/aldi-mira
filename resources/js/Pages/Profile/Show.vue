@@ -22,22 +22,23 @@ defineProps({
             </h2>
         </template>
 
-        <div>
-            <div class="max-w-7xl mx-auto py-10 sm:px-6 lg:px-8">
+        <div class="py-2 min-h-screen relative overflow-hidden">
+            <!-- PERBAIKAN: Padding lebih kecil untuk mobile -->
+            <div class="w-full px-3 sm:px-4 lg:px-6 relative z-10">
                 <div v-if="$page.props.jetstream.canUpdateProfileInformation">
                     <UpdateProfileInformationForm :user="$page.props.auth.user" />
 
                     <SectionBorder />
                 </div>
 
-                <!-- 🌈 Tema Tampilan -->
+                <!-- 🌈 Tema Tampilan
                 <div class="mt-10 sm:mt-0">
                     <ThemeLayout />
                     <SectionBorder />
-                </div>
+                </div> -->
 
                 <div v-if="$page.props.jetstream.canUpdatePassword">
-                    <UpdatePasswordForm class="mt-10 sm:mt-0" />
+                    <UpdatePasswordForm class="mt-4 sm:mt-0" />
 
                     <SectionBorder />
                 </div>
@@ -45,18 +46,18 @@ defineProps({
                 <div v-if="$page.props.jetstream.canManageTwoFactorAuthentication">
                     <TwoFactorAuthenticationForm
                         :requires-confirmation="confirmsTwoFactorAuthentication"
-                        class="mt-10 sm:mt-0"
+                        class="mt-4 sm:mt-0"
                     />
 
                     <SectionBorder />
                 </div>
 
-                <LogoutOtherBrowserSessionsForm :sessions="sessions" class="mt-10 sm:mt-0" />
+                <LogoutOtherBrowserSessionsForm :sessions="sessions" class="mt-4 sm:mt-0" />
 
                 <template v-if="$page.props.jetstream.hasAccountDeletionFeatures">
                     <SectionBorder />
 
-                    <DeleteUserForm class="mt-10 sm:mt-0" />
+                    <DeleteUserForm class="mt-4 sm:mt-0" />
                 </template>
             </div>
         </div>
