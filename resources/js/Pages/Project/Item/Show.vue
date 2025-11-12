@@ -5,19 +5,19 @@
             <div class="w-full px-3 sm:px-4 lg:px-6 relative z-10">
                 <!-- Flash Message -->
                 <div 
-                    v-if="$page.props.flash.message" 
+                    v-if="$page.props.flash?.message" 
                     class="mb-4 md:mb-6 p-3 md:p-4 rounded-xl md:rounded-2xl border backdrop-blur-sm transition-all duration-300"
                     :class="{
-                        'bg-green-50 border-green-200 text-green-800': $page.props.flash.message.type === 'success',
-                        'bg-red-50 border-red-200 text-red-800': $page.props.flash.message.type === 'error'
+                        'bg-green-50 border-green-200 text-green-800': $page.props.flash.message?.type === 'success',
+                        'bg-red-50 border-red-200 text-red-800': $page.props.flash.message?.type === 'error'
                     }"
                 >
                     <div class="flex items-center justify-between">
                         <div class="flex items-center gap-2 md:gap-3">
                             <span class="text-lg md:text-xl">
-                                {{ $page.props.flash.message.type === 'success' ? '✅' : '⚠️' }}
+                                {{ $page.props.flash.message?.type === 'success' ? '✅' : '⚠️' }}
                             </span>
-                            <span class="font-medium text-sm md:text-base">{{ $page.props.flash.message.message }}</span>
+                            <span class="font-medium text-sm md:text-base">{{ $page.props.flash.message?.message }}</span>
                         </div>
                         <button 
                             @click="$page.props.flash.message = null"
@@ -798,6 +798,8 @@ const unitPrice = ref(0)
 
 const showCategoryInput = ref(false) // TAMBAHKAN INI
 const availableCategories = ref([]) // TAMBAHKAN INI
+
+
 
 // Initialize data
 onMounted(() => {

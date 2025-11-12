@@ -29,20 +29,22 @@
     const projectToDelete = ref(null);
     const flashMessage = ref(null);
 
-    // Watch for flash messages
-    watch(() => page.props.flash, (newFlash) => {
-        if (newFlash.success || newFlash.error) {
-            flashMessage.value = {
-                message: newFlash.success || newFlash.error,
-                type: newFlash.type || (newFlash.success ? 'success' : 'error')
-            };
-            
-            // Auto hide flash message after 5 seconds
-            setTimeout(() => {
-                flashMessage.value = null;
-            }, 5000);
-        }
-    }, { immediate: true });
+// Watch for flash messages - EVEN SAFER VERSION
+watch(() => page.props.flash, (newFlash) => {
+    if (!newFlash) return; // Langsung return jika undefined/null
+    
+    const message = newFlash.success || newFlash.error;
+    if (message) {
+        flashMessage.value = {
+            message: message,
+            type: newFlash.type || (newFlash.success ? 'success' : 'error')
+        };
+        
+        setTimeout(() => {
+            flashMessage.value = null;
+        }, 5000);
+    }
+}, { immediate: true });
 
     // Forms
     const form = useForm({

@@ -174,15 +174,17 @@ const loadFilterData = async () => {
     await Promise.all([loadAccounts(), loadCategories()])
 }
 
-// Watch for flash messages
+// Watch for flash messages - EVEN SAFER VERSION
 watch(() => page.props.flash, (newFlash) => {
-    if (newFlash.success || newFlash.error) {
+    if (!newFlash) return; // Langsung return jika undefined/null
+    
+    const message = newFlash.success || newFlash.error;
+    if (message) {
         flashMessage.value = {
-            message: newFlash.success || newFlash.error,
+            message: message,
             type: newFlash.type || (newFlash.success ? 'success' : 'error')
         };
         
-        // Auto hide flash message after 5 seconds
         setTimeout(() => {
             flashMessage.value = null;
         }, 5000);
